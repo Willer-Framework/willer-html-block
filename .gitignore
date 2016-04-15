@@ -1,0 +1,10 @@
+.buildpath
+.project
+dummy.php
+*.rtpl.php
+*.txt
+.travis.yml
+composer.lock
+.idea/
+/vendor/
+
