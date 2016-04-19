@@ -1,6 +1,6 @@
 <?php
- 
-namespace Core\Component\HtmlBlock {
+
+namespace Component\HtmlBlock {
     use Core\Exception\WException;
     use Core\Util;
  
