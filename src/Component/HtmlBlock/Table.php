@@ -8,7 +8,8 @@ namespace Component\HtmlBlock {
         private $html_block;
         private $dom_element;
         private $model;
-        private $label;
+        private $column;
+        private $button;
         private $id;
         private $title;
         private $text;
@@ -34,8 +35,8 @@ namespace Component\HtmlBlock {
             $model = Util::get($kwargs,'model',null);
             $this->setModel($model);
 
-            $label = Util::get($kwargs,'label',null);
-            $this->setLabel($label);
+            $column = Util::get($kwargs,'column',null);
+            $this->setColumn($column);
 
             $title = Util::get($kwargs,'title',null);
             $this->setTitle($title);
@@ -90,12 +91,12 @@ namespace Component\HtmlBlock {
             $this->model = $model;
         }
 
-        private function getLabel() {
-            return $this->label;
+        private function getColumn() {
+            return $this->column;
         }
  
-        private function setLabel($label) {
-            $this->label = $label;
+        private function setColumn($column) {
+            $this->column = $column;
         }
 
         private function getId() {
@@ -257,26 +258,33 @@ namespace Component\HtmlBlock {
 
         private function modelLoop($html_block,$table_tr_element,$field_name,$object,$type) {
             $element_id = $this->getId();
-            $label = $this->getLabel();
+            $column = $this->getColumn();
+            $object_schema = $object->schema();
             $flag_label = null;
 
             foreach ($object as $field => $value) {
                 $flag_label = false;
                 $field_label = $field;
 
-                if (!empty($label)) {
-                    if (!array_key_exists($field,$label[$field_name])) {
-                        continue;
-                    }
-
-                    $flag_label = true;
-                    $field_label = $label[$field_name][$field];
-                }
-
                 if (is_object($value)) {
                     $this->modelLoop($html_block,$table_tr_element,$field,$value,$type);
  
                 } else {
+                    if (!empty($column)) {
+                        if (!array_key_exists($field_name,$column) && !in_array($field,$column)) {
+                            continue;
+                        }
+
+                        if (array_key_exists($field_name,$column) && in_array($field,$column[$field_name]) && array_key_exists('label',$object_schema[$field]->rule)) {
+                            $field_label = $object_schema[$field]->rule['label'];
+                            $flag_label = true;
+
+                        } else if (empty($flag_label) && in_array($field,$column) && array_key_exists('label',$object_schema[$field]->rule)) {
+                            $field_label = $object_schema[$field]->rule['label'];
+                            $flag_label = true;
+                        }
+                    }
+
                     if ($type == 'th') {
                         if (!$flag_label) {
                             $value = vsprintf('%s.%s',[$field_label,$field]);
@@ -367,7 +375,7 @@ namespace Component\HtmlBlock {
             $html_block = $this->getHtmlBlock();
             $dom_element = $this->getDomElement();
             $model = $this->getModel();
-            $label = $this->getLabel();
+            $column = $this->getColumn();
  
             $table_thead_element = $html_block->createElement('thead');
             $node_table_thead = $dom_element->appendChild($table_thead_element);
@@ -376,26 +384,29 @@ namespace Component\HtmlBlock {
             if (empty($model) || !is_array($model) || !isset($model['data']) || empty($model['data'])) {
                 return false;
             }
- 
+
             $data = $model['data'][0];
  
             $table_thead_tr_element = $html_block->createElement('tr');
+            $data_schema = $data->schema();
  
             foreach ($data as $field => $value) {
                 $field_label = $field;
-
-                if (!empty($label)) {
-                    if (!array_key_exists($field,$label)) {
-                        continue;
-                    }
-
-                    $field_label = $label[$field];
-                }
 
                 if (is_object($value)) {
                     $this->modelLoop($html_block,$table_thead_tr_element,$field,$value,'th');
  
                 } else {
+                    if (!empty($column)) {
+                        if (!in_array($field,$column)) {
+                            continue;
+                        }
+
+                        if (array_key_exists('label',$data_schema[$field]->rule)) {
+                            $field_label = $data_schema[$field]->rule['label'];
+                        }
+                    }
+
                     $table_thead_tr_th_element = $html_block->createElement('th',$field_label);
                     $table_thead_tr_element->appendChild($table_thead_tr_th_element);
                 }
@@ -454,7 +465,7 @@ namespace Component\HtmlBlock {
             $html_block = $this->getHtmlBlock();
             $dom_element = $this->getDomElement();
             $model = $this->getModel();
-            $label = $this->getLabel();
+            $column = $this->getColumn();
  
             $table_tbody_element = $html_block->createElement('tbody');
             $node_table_tbody = $dom_element->appendChild($table_tbody_element);
@@ -479,16 +490,16 @@ namespace Component\HtmlBlock {
                 $table_tbody_tr_element = $html_block->createElement('tr');
  
                 foreach ($data as $field => $value) {
-                    if (!empty($label)) {
-                        if (!array_key_exists($field,$label)) {
-                            continue;
-                        }
-                    }
-
                     if (is_object($value)) {
                         $this->modelLoop($html_block,$table_tbody_tr_element,$field,$value,'td');
  
                     } else {
+                        if (!empty($column)) {
+                            if (!in_array($field,$column)) {
+                                continue;
+                            }
+                        }
+
                         $table_tbody_tr_td_element = $html_block->createElement('td',$value);
                         $table_tbody_tr_element->appendChild($table_tbody_tr_td_element);
                     }
@@ -660,7 +671,7 @@ namespace Component\HtmlBlock {
             $node_table_tfoot = $dom_element->appendChild($table_tfoot_element);
             $this->setNodeTableTfoot($node_table_tfoot);
 
-            $this->addButton(); 
+            // $this->addButton();
             $this->addThead();
             $this->addSearch();
             $this->addTbody();
