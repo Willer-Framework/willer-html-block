@@ -111,27 +111,29 @@ namespace Component\HtmlBlock {
             $dom_element = $this->getDomElement();
             $model = $this->getModel();
 
-            if (empty($model)) {
+            if (empty($model) || !is_array($model)) {
                 $this->setDomElement(null);
 
                 return false;
             }
 
-            $button = $html_block->createElement('button');
-            $button->setAttribute('type','button');
-            $button->setAttribute('class','close');
-            $button->setAttribute('data-dismiss','alert');
-            $button->setAttribute('aria-label','Close');
+            foreach ($model as $model_item) {
+                $button = $html_block->createElement('button');
+                $button->setAttribute('type','button');
+                $button->setAttribute('class','close');
+                $button->setAttribute('data-dismiss','alert');
+                $button->setAttribute('aria-label','Close');
 
-            $span = $html_block->createElement('span','&times;');
-            $span->setAttribute('aria-hidden','true');
+                $span = $html_block->createElement('span','&times;');
+                $span->setAttribute('aria-hidden','true');
 
-            $button->appendChild($span);
+                $button->appendChild($span);
 
-            $p = $html_block->createElement('p',$model);
+                $p = $html_block->createElement('p',$model_item);
 
-            $dom_element->appendChild($button);
-            $dom_element->appendChild($p);
+                $dom_element->appendChild($button);
+                $dom_element->appendChild($p);
+            }
 
             $this->addContainer();
         }
