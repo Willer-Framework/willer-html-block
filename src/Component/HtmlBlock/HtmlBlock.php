@@ -245,7 +245,9 @@ namespace Component\HtmlBlock {
             $html_node_body_div_container_row = $this->getHtmlNodeBodyDivContainerRow();
 
             foreach ($component_list as $component) {
-                $div_element->appendChild($component->getDomElement());
+                if (!empty($component->getDomElement())) {
+                    $div_element->appendChild($component->getDomElement());
+                }
             }
 
             $html_node_body_div_container_row->appendChild($div_element);

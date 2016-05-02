@@ -1,9 +1,9 @@
 <?php
 
 namespace Component\HtmlBlock {
-    use Core\Exception\WException;
-    use Core\Util;
     use Core\DAO\Transaction;
+    use Core\Util;
+    use Core\Exception\WException;
  
     class Form {
         private $html_block;
@@ -184,6 +184,19 @@ namespace Component\HtmlBlock {
  
         private function setDomElement($dom_element) {
             $this->dom_element = $dom_element;
+        }
+
+        private function addFieldPrimaryKey($model,$schema,$field) {
+            $html_block = $this->getHtmlBlock();
+            $element_id = $this->getId();
+ 
+            $input = $html_block->createElement('input');
+            $input->setAttribute('name',$field);
+            $input->setAttribute('value',$model->$field);
+            $input->setAttribute('type','hidden');
+            $input->setAttribute('id',vsprintf('%s-field-%s',[$element_id,$field]));
+ 
+            return $input;
         }
  
         private function addFieldForeignKey($model,$schema,$field) {
@@ -635,7 +648,16 @@ namespace Component\HtmlBlock {
             $type = $this->getType();
  
             foreach ($model->schema() as $field => $schema) {
-                if ($schema->method == 'foreignKey') {
+                if (array_key_exists('hidden',$schema->rule) && !empty($schema->rule)) {
+                    continue;
+                }
+
+                if ($schema->method == 'primaryKey') {
+                    $add_field_primaryKey = $this->addFieldPrimaryKey($model,$schema,$field);
+ 
+                    $dom_element->appendChild($add_field_primaryKey);
+
+                } else if ($schema->method == 'foreignKey') {
                     $add_field_foreignkey = $this->addFieldForeignKey($model,$schema,$field);
  
                     $dom_element->appendChild($add_field_foreignkey);
