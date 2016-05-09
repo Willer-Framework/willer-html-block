@@ -2,7 +2,7 @@
 
 namespace Component\HtmlBlock {
     use Core\DAO\Transaction;
-    use Core\Util;
+    use Core\{Util,Request};
     use Core\Exception\WException;
  
     class Form {
@@ -639,10 +639,32 @@ namespace Component\HtmlBlock {
  
             $this->setDomElement($div_class_col);
         }
+
+        private function modelPersist() {
+            $model = $this->getModel();
+
+            $request = new Request();
+            $html_block_form = $request->getHttpSession('html_block_form');
+
+            if (!empty($html_block_form)) {
+                foreach ($html_block_form as $field_key => $field_value) {
+                    if (array_key_exists($field_key,$model)) {
+                        $model->$field_key = $field_value;
+                    }
+                }
+
+                $this->setModel($model);
+
+                $request->cleanHttpSession('html_block_form');
+            }
+
+            return $this;
+        }
  
         private function ready() {
             $html_block = $this->getHtmlBlock();
             $dom_element = $this->getDomElement();
+            $this->modelPersist();
             $model = $this->getModel();
             $element_id = $this->getId();
             $type = $this->getType();
