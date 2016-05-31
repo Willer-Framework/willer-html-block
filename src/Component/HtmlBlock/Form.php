@@ -202,6 +202,7 @@ namespace Component\HtmlBlock {
         private function addFieldForeignKey($model,$schema,$field) {
             $html_block = $this->getHtmlBlock();
             $element_id = $this->getId();
+            $type = $this->getType();
  
             $div = $html_block->createElement('div');
             $div->setAttribute('class','form-group');
@@ -214,6 +215,10 @@ namespace Component\HtmlBlock {
  
             $label = $html_block->createElement('label',$field_label);
             $label->setAttribute('for',vsprintf('%s-field-%s',[$element_id,$field]));
+
+            if (!empty($type) && $type == 'horizontal') {
+                $label->setAttribute('class','col-sm-2 control-label');
+            }
  
             $select = $html_block->createElement('select');
             $select->setAttribute('name',$field);
@@ -268,9 +273,19 @@ namespace Component\HtmlBlock {
                     $select->appendChild($option);
                 }
             }
- 
-            $div->appendChild($label);
-            $div->appendChild($select);
+
+            if (!empty($type) && $type == 'horizontal') {
+                $div_type_horizontal = $html_block->createElement('div');
+                $div_type_horizontal->setAttribute('class','col-sm-10');
+                $div_type_horizontal->appendChild($select);
+
+                $div->appendChild($label);
+                $div->appendChild($div_type_horizontal);
+
+            } else {
+                $div->appendChild($label);
+                $div->appendChild($select);
+            }
  
             return $div;
         }

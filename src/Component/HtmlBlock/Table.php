@@ -225,7 +225,7 @@ namespace Component\HtmlBlock {
             $request = new Request;
 
             if (array_key_exists('add',$button)) {
-                $href = !empty($button['add']) ? $request->getRoute($button['add']) : vsprintf('?%s-add=1',[$element_id]);
+                $href = !empty($button['add']) ? $button['add'] : vsprintf('?%s-add=1',[$element_id]);
 
                 $a_div_button_group = $html_block->createElement('a');
                 $a_div_button_group->setAttribute('href',$href);
@@ -242,7 +242,7 @@ namespace Component\HtmlBlock {
             }
 
             if (array_key_exists('refresh',$button)) {
-                $href = !empty($button['refresh']) ? $request->getRoute($button['refresh']) : vsprintf('?%s-refresh=1',[$element_id]);
+                $href = !empty($button['refresh']) ? $button['refresh'] : vsprintf('?%s-refresh=1',[$element_id]);
 
                 $a_div_button_group = $html_block->createElement('a');
                 $a_div_button_group->setAttribute('href',$href);
@@ -259,7 +259,7 @@ namespace Component\HtmlBlock {
             }
 
             if (array_key_exists('export',$button)) {
-                $href = !empty($button['export']) ? $request->getRoute($button['export']) : vsprintf('?%s-export=1',[$element_id]);
+                $href = !empty($button['export']) ? $button['export'] : vsprintf('?%s-export=1',[$element_id]);
 
                 $a_div_button_group = $html_block->createElement('a');
                 $a_div_button_group->setAttribute('href',$href);
@@ -296,7 +296,7 @@ namespace Component\HtmlBlock {
  
                 } else {
                     if (!empty($column)) {
-                        if (!array_key_exists($field_name,$column) && !in_array($field,$column)) {
+                        if (array_key_exists($field_name,$column) && !in_array($field,$column[$field_name])) {
                             continue;
                         }
 
@@ -353,6 +353,20 @@ namespace Component\HtmlBlock {
             $data_schema = $data->schema();
  
             foreach ($data as $field => $value) {
+                if (!empty($column)) {
+                    if (!in_array($field,$column)) {
+                        $flag_column = false;
+
+                        if (array_key_exists($field,$column)) {
+                            $flag_column = true;
+                        }
+
+                        if (empty($flag_column)) {
+                            continue;
+                        }
+                    }
+                }
+
                 if (is_object($value)) {
                     $this->modelLoop($html_block,$table_thead_tr_element,$field,$value,'form');
  
@@ -360,10 +374,6 @@ namespace Component\HtmlBlock {
                     if (!empty($column)) {
                         if (!in_array($field,$column)) {
                             continue;
-                        }
-
-                        if (array_key_exists('label',$data_schema[$field]->rule)) {
-                            $field_label = $data_schema[$field]->rule['label'];
                         }
                     }
 
@@ -415,20 +425,28 @@ namespace Component\HtmlBlock {
             foreach ($data as $field => $value) {
                 $field_label = $field;
 
+                if (!empty($column)) {
+                    if (!in_array($field,$column)) {
+                        $flag_column = false;
+
+                        if (array_key_exists($field,$column)) {
+                            $flag_column = true;
+                        }
+
+                        if (empty($flag_column)) {
+                            continue;
+                        }
+                    }
+
+                    if (array_key_exists('label',$data_schema[$field]->rule)) {
+                        $field_label = $data_schema[$field]->rule['label'];
+                    }
+                }
+
                 if (is_object($value)) {
                     $this->modelLoop($html_block,$table_thead_tr_element,$field,$value,'th');
  
                 } else {
-                    if (!empty($column)) {
-                        if (!in_array($field,$column)) {
-                            continue;
-                        }
-
-                        if (array_key_exists('label',$data_schema[$field]->rule)) {
-                            $field_label = $data_schema[$field]->rule['label'];
-                        }
-                    }
-
                     $table_thead_tr_th_element = $html_block->createElement('th',$field_label);
                     $table_thead_tr_element->appendChild($table_thead_tr_th_element);
                 }
@@ -458,7 +476,7 @@ namespace Component\HtmlBlock {
             $request = new Request;
 
             if (array_key_exists('update',$button)) {
-                $href = !empty($button['update']) ? $request->getRoute($button['update'],['id' => $id]) : vsprintf('?%s-edit=%s',[$element_id,$id]);
+                $href = !empty($button['update']) ? $button['update']($id) : vsprintf('?%s-edit=%s',[$element_id,$id]);
 
                 $a_div_td_tr_tbody = $html_block->createElement('a');
                 $a_div_td_tr_tbody->setAttribute('href',$href);
@@ -475,7 +493,7 @@ namespace Component\HtmlBlock {
             }
 
             if (array_key_exists('delete',$button)) {
-                $href = !empty($button['delete']) ? $request->getRoute($button['delete'],['id' => $id]) : vsprintf('?%s-remove=%s',[$element_id,$id]);
+                $href = !empty($button['delete']) ? $button['delete']($id) : vsprintf('?%s-remove=%s',[$element_id,$id]);
 
                 $a_div_td_tr_tbody = $html_block->createElement('a');
                 $a_div_td_tr_tbody->setAttribute('href',$href);
@@ -523,16 +541,24 @@ namespace Component\HtmlBlock {
                 $table_tbody_tr_element = $html_block->createElement('tr');
  
                 foreach ($data as $field => $value) {
+                    if (!empty($column)) {
+                        if (!in_array($field,$column)) {
+                            $flag_column = false;
+
+                            if (array_key_exists($field,$column)) {
+                                $flag_column = true;
+                            }
+
+                            if (empty($flag_column)) {
+                                continue;
+                            }
+                        }
+                    }
+
                     if (is_object($value)) {
                         $this->modelLoop($html_block,$table_tbody_tr_element,$field,$value,'td');
  
                     } else {
-                        if (!empty($column)) {
-                            if (!in_array($field,$column)) {
-                                continue;
-                            }
-                        }
-
                         $table_tbody_tr_td_element = $html_block->createElement('td',$value);
                         $table_tbody_tr_element->appendChild($table_tbody_tr_td_element);
                     }
@@ -694,24 +720,34 @@ namespace Component\HtmlBlock {
                 }
             }
         }
- 
+
+        private function addTfoot() {
+            $html_block = $this->getHtmlBlock();
+            $dom_element = $this->getDomElement();
+
+            $table_tfoot_element = $html_block->createElement('tfoot');
+            $node_table_tfoot = $dom_element->appendChild($table_tfoot_element);
+            $this->setNodeTableTfoot($node_table_tfoot);            
+        }
+
         private function ready() {
             $html_block = $this->getHtmlBlock();
             $dom_element = $this->getDomElement();
             $model = $this->getModel();
 
             if (empty($model) || !is_array($model) || !isset($model['data']) || empty($model['data'])) {
+                $this->addButton();
+                $this->addPanel();
+                $this->addContainer();
+
                 return false;
             }
- 
-            $table_tfoot_element = $html_block->createElement('tfoot');
-            $node_table_tfoot = $dom_element->appendChild($table_tfoot_element);
-            $this->setNodeTableTfoot($node_table_tfoot);
 
             $this->addButton();
             $this->addThead();
             $this->addSearch();
             $this->addTbody();
+            $this->addTfoot();
             $this->addPanel();
             $this->addContainer();
             $this->addPagination();
