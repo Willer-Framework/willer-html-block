@@ -10,6 +10,7 @@ namespace Component\HtmlBlock {
         private $model;
         private $column;
         private $button;
+        private $button_extra;
         private $id;
         private $title;
         private $text;
@@ -40,6 +41,9 @@ namespace Component\HtmlBlock {
 
             $button = Util::get($kwargs,'button',null);
             $this->setButton($button);
+
+            $button_extra = Util::get($kwargs,'button_extra',null);
+            $this->setButtonExtra($button_extra);
 
             $title = Util::get($kwargs,'title',null);
             $this->setTitle($title);
@@ -108,6 +112,14 @@ namespace Component\HtmlBlock {
  
         private function setButton($button) {
             $this->button = $button;
+        }
+
+        private function getButtonExtra() {
+            return $this->button_extra;
+        }
+ 
+        private function setButtonExtra($button_extra) {
+            $this->button_extra = $button_extra;
         }
 
         private function getId() {
@@ -212,19 +224,22 @@ namespace Component\HtmlBlock {
             $dom_element = $this->getDomElement();
             $element_id = $this->getId();
             $button = $this->getButton();
+            $button_extra = $this->getButtonExtra();
 
-            if (empty($button)) {
+            if (empty($button) && empty($button_extra)) {
                 return false;
             }
 
-            $div_button_group = $html_block->createElement('div');
-            $div_button_group->setAttribute('class','btn-group');
-            $div_button_group->setAttribute('role','group');
-            $div_button_group->setAttribute('aria-label','');
+            if (!empty($button)) {
+                $div_button_group = $html_block->createElement('div');
+                $div_button_group->setAttribute('class','btn-group pull-left');
+                $div_button_group->setAttribute('role','group');
+                $div_button_group->setAttribute('aria-label','');
+            }
 
             $request = new Request;
 
-            if (array_key_exists('add',$button)) {
+            if (!empty($button) && array_key_exists('add',$button)) {
                 $href = !empty($button['add']) ? $button['add'] : vsprintf('?%s-add=1',[$element_id]);
 
                 $a_div_button_group = $html_block->createElement('a');
@@ -241,7 +256,7 @@ namespace Component\HtmlBlock {
                 $div_button_group->appendChild($a_div_button_group);
             }
 
-            if (array_key_exists('refresh',$button)) {
+            if (!empty($button) && array_key_exists('refresh',$button)) {
                 $href = !empty($button['refresh']) ? $button['refresh'] : vsprintf('?%s-refresh=1',[$element_id]);
 
                 $a_div_button_group = $html_block->createElement('a');
@@ -258,26 +273,34 @@ namespace Component\HtmlBlock {
                 $div_button_group->appendChild($a_div_button_group);
             }
 
-            if (array_key_exists('export',$button)) {
-                $href = !empty($button['export']) ? $button['export'] : vsprintf('?%s-export=1',[$element_id]);
+            if (!empty($button_extra)) {
+                $div_button_extra_group = $html_block->createElement('div');
+                $div_button_extra_group->setAttribute('class','btn-group pull-right');
+                $div_button_extra_group->setAttribute('role','group');
+                $div_button_extra_group->setAttribute('aria-label','');
 
-                $a_div_button_group = $html_block->createElement('a');
-                $a_div_button_group->setAttribute('href',$href);
-                $a_div_button_group->setAttribute('id',vsprintf('%s-export',[$element_id]));
-                $a_div_button_group->setAttribute('role','button');
-                $a_div_button_group->setAttribute('class','btn btn-default btn-xs');
+                foreach ($button_extra as $key_name => $data) {
+                    $a_div_button_extra_group = $html_block->createElement('a',Util::get($data,'label',null));
+                    $a_div_button_extra_group->setAttribute('href',Util::get($data,'href',null));
+                    $a_div_button_extra_group->setAttribute('id',Util::get($data,'id',null));
+                    $a_div_button_extra_group->setAttribute('role','button');
+                    $a_div_button_extra_group->setAttribute('class','btn btn-default btn-xs');
 
-                $span_button_div_button_group = $html_block->createElement('span');
-                $span_button_div_button_group->setAttribute('class','glyphicon glyphicon-export');
-                $span_button_div_button_group->setAttribute('aria-hidden','true');
+                    $span_button_extra_div_button_group = $html_block->createElement('span');
+                    $span_button_extra_div_button_group->setAttribute('class',Util::get($data,'class_icon',null));
+                    $span_button_extra_div_button_group->setAttribute('aria-hidden','true');
 
-                $a_div_button_group->appendChild($span_button_div_button_group);
-                $div_button_group->appendChild($a_div_button_group);
+                    $a_div_button_extra_group->appendChild($span_button_extra_div_button_group);
+                    $div_button_extra_group->appendChild($a_div_button_extra_group);
+                }
             }
 
             $p_element = $html_block->createElement('p');
+            $p_element->setAttribute('class','pull-left');
+            $p_element->setAttribute('style','width:100%;');
 
             $dom_element->insertBefore($div_button_group);
+            $dom_element->insertBefore($div_button_extra_group);
             $dom_element->insertBefore($p_element);
         }
 
