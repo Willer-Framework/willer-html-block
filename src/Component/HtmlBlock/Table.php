@@ -299,8 +299,14 @@ namespace Component\HtmlBlock {
             $p_element->setAttribute('class','pull-left');
             $p_element->setAttribute('style','width:100%;');
 
-            $dom_element->insertBefore($div_button_group);
-            $dom_element->insertBefore($div_button_extra_group);
+            if (!empty($button)) {
+                $dom_element->insertBefore($div_button_group);
+            }
+
+            if (!empty($button_extra)) {
+                $dom_element->insertBefore($div_button_extra_group);
+            }
+
             $dom_element->insertBefore($p_element);
         }
 

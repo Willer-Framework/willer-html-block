@@ -135,12 +135,48 @@ namespace Component\HtmlBlock {
             }
 
             foreach ($model as $name => $route) {
-                $li_menu = $html_block->createElement('li');
+                if (!is_array($route)) {
+                    $li_menu = $html_block->createElement('li');
 
-                $li_a_menu = $html_block->createElement('a',$name);
-                $li_a_menu->setAttribute('href',$route);
+                    $li_a_menu = $html_block->createElement('a',$name);
+                    $li_a_menu->setAttribute('href',$route);
 
-                $li_menu->appendChild($li_a_menu);
+                    $li_menu->appendChild($li_a_menu);
+
+                } else {
+                    $li_menu = $html_block->createElement('li');
+                    $li_menu->setAttribute('class','dropdown');
+
+                    $li_a_menu = $html_block->createElement('a',$name);
+                    $li_a_menu->setAttribute('href','#');
+                    $li_a_menu->setAttribute('class','dropdown-toggle');
+                    $li_a_menu->setAttribute('data-toggle','dropdown');
+                    $li_a_menu->setAttribute('role','button');
+                    $li_a_menu->setAttribute('aria-haspopup','true');
+                    $li_a_menu->setAttribute('aria-expanded','false');
+
+                    $li_a_span_menu = $html_block->createElement('span');
+                    $li_a_span_menu->setAttribute('class','caret');
+
+                    $li_a_menu->appendChild($li_a_span_menu);
+
+                    $li_menu->appendChild($li_a_menu);
+
+                    $li_ul_menu = $html_block->createElement('ul');
+                    $li_ul_menu->setAttribute('class','dropdown-menu');
+
+                    foreach ($route as $route_name => $route_value) {
+                        $li_ul_li_menu = $html_block->createElement('li');
+
+                        $li_ul_li_a_menu = $html_block->createElement('a',$route_name);
+                        $li_ul_li_a_menu->setAttribute('href',$route_value);
+
+                        $li_ul_li_menu->appendChild($li_ul_li_a_menu);
+                        $li_ul_menu->appendChild($li_ul_li_menu);
+                    }
+
+                    $li_menu->appendChild($li_ul_menu);
+                }
 
                 $node_ul_nav_body->appendChild($li_menu);
             }
