@@ -5,8 +5,8 @@
     "homepage": "http://williamborba.github.io/willer-core",
     "type": "library",
     "require": {
-        "php": ">=5.6",
-        "wborba/willer-core": "dev-development"
+        "php": ">=7.0",
+        "wborba/willer-core": "1.*"
     },
     "autoload": {
         "psr-4": {
