@@ -8,10 +8,10 @@ namespace Component\HtmlBlock {
         private $html_block;
         private $dom_element;
         private $model;
+        private $navbar_direction;
         private $title;
-        private $node_div_nav_header;
-        private $node_div_nav_body;
-        private $node_ul_nav_body;
+        private $title_url;
+        private $title_img;
 
         public function __construct($html_block,...$kwargs) {
             $this->setHtmlBlock($html_block);
@@ -23,8 +23,17 @@ namespace Component\HtmlBlock {
             $model = Util::get($kwargs,'model',null);
             $this->setModel($model);
 
+            $navbar_direction = Util::get($kwargs,'navbar_direction',null);
+            $this->setNavBarDirection($navbar_direction);
+
             $title = Util::get($kwargs,'title',null);
             $this->setTitle($title);
+
+            $title_url = Util::get($kwargs,'title_url',null);
+            $this->setTitleUrl($title_url);
+
+            $title_img = Util::get($kwargs,'title_img',null);
+            $this->setTitleImg($title_img);
 
             $dom_element = $html_block->createElement('nav');
 
@@ -36,7 +45,7 @@ namespace Component\HtmlBlock {
                 $dom_element->setAttribute('class',$kwargs['class']);
 
             } else {
-                $dom_element->setAttribute('class','navbar navbar-inverse navbar-fixed-top');
+                $dom_element->setAttribute('class','navbar navbar-default');
             }
 
             if (isset($kwargs['style']) && !empty($kwargs['style'])) {
@@ -57,6 +66,14 @@ namespace Component\HtmlBlock {
             $this->html_block = $html_block;
         }
 
+        public function getDomElement() {
+            return $this->dom_element;
+        }
+
+        private function setDomElement($dom_element) {
+            $this->dom_element = $dom_element;
+        }
+
         private function getModel() {
             return $this->model;
         }
@@ -65,12 +82,12 @@ namespace Component\HtmlBlock {
             $this->model = $model;
         }
 
-        public function getDomElement() {
-            return $this->dom_element;
+        private function getNavBarDirection() {
+            return $this->navbar_direction;
         }
 
-        private function setDomElement($dom_element) {
-            $this->dom_element = $dom_element;
+        private function setNavBarDirection($navbar_direction) {
+            $this->navbar_direction = $navbar_direction;
         }
 
         private function getTitle() {
@@ -81,137 +98,161 @@ namespace Component\HtmlBlock {
             $this->title = $title;
         }
 
-        private function getNodeDivContainer() {
-            return $this->node_div_container;
+        private function getTitleUrl() {
+            return $this->title_url;
         }
 
-        private function setNodeDivContainer($node_div_container) {
-            $this->node_div_container = $node_div_container;
+        private function setTitleUrl($title_url) {
+            $this->title_url = $title_url;
         }
 
-        public function getNodeDivNavHeader() {
-            return $this->node_div_nav_header;
+        private function getTitleImg() {
+            return $this->title_img;
         }
 
-        private function setNodeDivNavHeader($node_div_nav_header) {
-            $this->node_div_nav_header = $node_div_nav_header;
-        }
-
-        public function getNodeDivNavBody() {
-            return $this->node_div_nav_body;
-        }
-
-        private function setNodeDivNavBody($node_div_nav_body) {
-            $this->node_div_nav_body = $node_div_nav_body;
-        }
-
-        public function getNodeUlNavBody() {
-            return $this->node_ul_nav_body;
-        }
-
-        private function setNodeUlNavBody($node_ul_nav_body) {
-            $this->node_ul_nav_body = $node_ul_nav_body;
-        }
-
-        private function setNavHeadTitle() {
-            $html_block = $this->getHtmlBlock();
-            $node_div_nav_header = $this->getNodeDivNavHeader();
-            $title = $this->getTitle();
-
-            if (!empty($title)) {
-                $a_title = $html_block->createElement('a',$title);
-                $a_title->setAttribute('class','navbar-brand');
-                $node_div_nav_header->appendChild($a_title);
-            }
-        }
-
-        private function setNavBodyMenu() {
-            $html_block = $this->getHtmlBlock();
-            $node_ul_nav_body = $this->getNodeUlNavBody();
-            $model = $this->getModel();
-
-            if (empty($model) || !is_array($model)) {
-                return false;
-            }
-
-            foreach ($model as $name => $route) {
-                if (!is_array($route)) {
-                    $li_menu = $html_block->createElement('li');
-
-                    $li_a_menu = $html_block->createElement('a',$name);
-                    $li_a_menu->setAttribute('href',$route);
-
-                    $li_menu->appendChild($li_a_menu);
-
-                } else {
-                    $li_menu = $html_block->createElement('li');
-                    $li_menu->setAttribute('class','dropdown');
-
-                    $li_a_menu = $html_block->createElement('a',$name);
-                    $li_a_menu->setAttribute('href','#');
-                    $li_a_menu->setAttribute('class','dropdown-toggle');
-                    $li_a_menu->setAttribute('data-toggle','dropdown');
-                    $li_a_menu->setAttribute('role','button');
-                    $li_a_menu->setAttribute('aria-haspopup','true');
-                    $li_a_menu->setAttribute('aria-expanded','false');
-
-                    $li_a_span_menu = $html_block->createElement('span');
-                    $li_a_span_menu->setAttribute('class','caret');
-
-                    $li_a_menu->appendChild($li_a_span_menu);
-
-                    $li_menu->appendChild($li_a_menu);
-
-                    $li_ul_menu = $html_block->createElement('ul');
-                    $li_ul_menu->setAttribute('class','dropdown-menu');
-
-                    foreach ($route as $route_name => $route_value) {
-                        $li_ul_li_menu = $html_block->createElement('li');
-
-                        $li_ul_li_a_menu = $html_block->createElement('a',$route_name);
-                        $li_ul_li_a_menu->setAttribute('href',$route_value);
-
-                        $li_ul_li_menu->appendChild($li_ul_li_a_menu);
-                        $li_ul_menu->appendChild($li_ul_li_menu);
-                    }
-
-                    $li_menu->appendChild($li_ul_menu);
-                }
-
-                $node_ul_nav_body->appendChild($li_menu);
-            }
+        private function setTitleImg($title_img) {
+            $this->title_img = $title_img;
         }
 
         private function ready() {
             $html_block = $this->getHtmlBlock();
             $dom_element = $this->getDomElement();
+            $model = $this->getModel();
+            $navbar_direction = $this->getNavBarDirection();
+            $title = $this->getTitle();
+            $title_url = $this->getTitleUrl();
+            $title_img = $this->getTitleImg();
 
-            $div_class_container_fluid_element = $html_block->createElement('div');
-            $div_class_container_fluid_element->setAttribute('class','container-fluid');
-            $this->setNodeDivContainer($div_class_container_fluid_element);
+            $div_container_fluid = $html_block->createElement('div');
+            $div_container_fluid->setAttribute('class','container-fluid');
 
-            $div_class_navbar_header_element = $html_block->createElement('div');
-            $div_class_navbar_header_element->setAttribute('class','navbar-header');
-            $this->setNodeDivNavHeader($div_class_navbar_header_element);
+            $div_header = $html_block->createElement('div');
+            $div_header->setAttribute('class','navbar-header');
 
-            $this->setNavHeadTitle();
+            if (!empty($title)) {
+                if (!empty($title_img)) {
+                    $img_brand = $html_block->createElement('img');
+                    $img_brand->setAttribute('src',$title_img);
+                    $img_brand->setAttribute('alt',$title);
 
-            $div_class_navbar_collapse_element = $html_block->createElement('div');
-            $div_class_navbar_collapse_element->setAttribute('class','navbar-collapse collapse');
-            $this->setNodeDivNavBody($div_class_navbar_collapse_element);
+                    $a_brand = $html_block->createElement('a');
+                    $a_brand->appendChild($img_brand);
 
-            $ul_class_navbar_element = $html_block->createElement('ul');
-            $ul_class_navbar_element->setAttribute('class','nav navbar-nav navbar-right');
+                } else {
+                    $a_brand = $html_block->createElement('a',$title);
+                }
 
-            $node_ul_nav_body = $div_class_navbar_collapse_element->appendChild($ul_class_navbar_element);
-            $this->setNodeUlNavBody($node_ul_nav_body);
+                $a_brand->setAttribute('class','navbar-brand');
+                $a_brand->setAttribute('href',$title_url);
 
-            $this->setNavBodyMenu();
+                $div_header->appendChild($a_brand);
+            }
 
-            $div_class_container_fluid_element->appendChild($div_class_navbar_header_element);
-            $div_class_container_fluid_element->appendChild($div_class_navbar_collapse_element);
+            $div_container_fluid->appendChild($div_header);
 
-            $dom_element->appendChild($div_class_container_fluid_element);
+            $div_collapse = $html_block->createElement('div');
+            $div_collapse->setAttribute('class','navbar-collapse collapse');
+            $div_collapse->setAttribute('id',vsprintf('%s-navbar-collapse',[mt_rand()]));
+
+            if (!empty($model)) {
+                $ul_navbar = $html_block->createElement('ul');
+
+                if (empty($navbar_direction)) {
+                    $ul_navbar->setAttribute('class','nav navbar-nav');
+
+                } else {
+                    $ul_navbar->setAttribute('class',vsprintf('nav navbar-nav %s',[$navbar_direction,]));
+                }
+
+                foreach ($model as $model_data) {
+                    $href = $model_data['href'] ?? null;
+                    $icon = $model_data['icon'] ?? null;
+                    $title = $model_data['title'] ?? null;
+                    $active = $model_data['active'] ?? null;
+                    $model = $model_data['model'] ?? null;
+
+                    $ul_li_navbar = $html_block->createElement('li');
+
+                    if (!empty($active)) {
+                        $ul_li_navbar->setAttribute('class','active');
+                    }
+
+                    $ul_li_a_navbar = $html_block->createElement('a');
+
+                    if (!empty($icon)) {
+                        $ul_li_a_span_navbar = $html_block->createElement('span');
+                        $ul_li_a_span_navbar->setAttribute('class',$icon);
+
+                        $ul_li_a_navbar->appendChild($ul_li_a_span_navbar);
+                    }
+
+                    $ul_li_a_navbar->appendChild(new \DOMText($title));
+
+                    if (empty($model)) {
+                        $ul_li_a_navbar->setAttribute('href',$href);
+
+                        $ul_li_navbar->appendChild($ul_li_a_navbar);
+
+                    } else {
+                        $ul_li_navbar->setAttribute('class','dropdown');
+
+                        $ul_li_a_navbar->setAttribute('class','dropdown-toggle');
+                        $ul_li_a_navbar->setAttribute('data-toggle','dropdown');
+                        $ul_li_a_navbar->setAttribute('role','button');
+                        $ul_li_a_navbar->setAttribute('aria-haspopup','true');
+                        $ul_li_a_navbar->setAttribute('aria-expanded','false');
+
+                        $ul_li_a_span_navbar = $html_block->createElement('span');
+                        $ul_li_a_span_navbar->setAttribute('class','caret');
+
+                        $ul_li_a_navbar->appendChild($ul_li_a_span_navbar);
+
+                        $ul_li_navbar->appendChild($ul_li_a_navbar);
+
+                        $ul_li_ul_navbar = $html_block->createElement('ul');
+                        $ul_li_ul_navbar->setAttribute('class','dropdown-menu');
+
+                        foreach ($model as $model_data) {
+                            $href = $model_data['href'] ?? null;
+                            $icon = $model_data['icon'] ?? null;
+                            $title = $model_data['title'] ?? null;
+                            $active = $model_data['active'] ?? null;
+
+                            $ul_li_ul_li_navbar = $html_block->createElement('li');
+
+                            if (!empty($active)) {
+                                $ul_li_ul_li_navbar->setAttribute('class','active');
+                            }
+
+                            $ul_li_ul_li_a_navbar = $html_block->createElement('a');
+                            $ul_li_ul_li_a_navbar->setAttribute('href',$href);
+
+                            if (!empty($icon)) {
+                                $ul_li_ul_li_a_span_navbar = $html_block->createElement('span');
+                                $ul_li_ul_li_a_span_navbar->setAttribute('class',$icon);
+
+                                $ul_li_ul_li_a_navbar->appendChild($ul_li_ul_li_a_span_navbar);
+                            }
+
+                            $ul_li_ul_li_a_navbar->appendChild(new \DOMText($title));
+
+                            $ul_li_ul_li_navbar->appendChild($ul_li_ul_li_a_navbar);
+
+                            $ul_li_ul_navbar->appendChild($ul_li_ul_li_navbar);
+                        }
+
+                        $ul_li_navbar->appendChild($ul_li_ul_navbar);
+                    }
+
+                    $ul_navbar->appendChild($ul_li_navbar);
+                }
+
+                $div_collapse->appendChild($ul_navbar);
+            }
+
+            $div_container_fluid->appendChild($div_collapse);
+
+            $dom_element->appendChild($div_container_fluid);
         }
 
         public function renderHtml() {

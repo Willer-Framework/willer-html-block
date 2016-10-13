@@ -4,11 +4,10 @@ namespace Component\HtmlBlock {
     use Core\Exception\WException;
     use Core\Util;
 
-    class ListGroup {
+    class Breadcrumbs {
         private $html_block;
         private $dom_element;
         private $model;
-        private $title;
         private $container_class;
         private $container_style;
 
@@ -22,16 +21,13 @@ namespace Component\HtmlBlock {
             $model = Util::get($kwargs,'model',null);
             $this->setModel($model);
 
-            $title = Util::get($kwargs,'title',null);
-            $this->setTitle($title);
-
             $container_class = Util::get($kwargs,'container_class',null);
             $this->setContainerClass($container_class);
 
             $container_style = Util::get($kwargs,'container_style',null);
             $this->setContainerStyle($container_style);
 
-            $dom_element = $html_block->createElement('div');
+            $dom_element = $html_block->createElement('ol');
 
             if (isset($kwargs['id']) && !empty($kwargs['id'])) {
                 $dom_element->setAttribute('id',$kwargs['id']);
@@ -41,7 +37,7 @@ namespace Component\HtmlBlock {
                 $dom_element->setAttribute('class',$kwargs['class']);
 
             } else {
-                $dom_element->setAttribute('class','list-group');
+                $dom_element->setAttribute('class','breadcrumb');
             }
 
             if (isset($kwargs['style']) && !empty($kwargs['style'])) {
@@ -76,14 +72,6 @@ namespace Component\HtmlBlock {
 
         private function setDomElement($dom_element) {
             $this->dom_element = $dom_element;
-        }
-
-        private function getTitle() {
-            return $this->title;
-        }
-
-        private function setTitle($title) {
-            $this->title = $title;
         }
 
         private function getContainerClass() {
@@ -129,29 +117,21 @@ namespace Component\HtmlBlock {
             foreach ($model as $model_data) {
                 $href = $model_data['href'] ?? null;
                 $title = $model_data['title'] ?? null;
-                $content = $model_data['content'] ?? null;
                 $active = $model_data['active'] ?? null;
 
-                $a_list_group_item = $html_block->createElement('a');
-                $a_list_group_item->setAttribute('href',$href);
-
                 if (!empty($active)) {
-                    $a_list_group_item->setAttribute('class','list-group-item active');
-
+                    $li_breadcrumbs = $html_block->createElement('li',$title);
+                    $li_breadcrumbs->setAttribute('class','active');                    
                 } else {
-                    $a_list_group_item->setAttribute('class','list-group-item');
+                    $li_a_heading = $html_block->createElement('a',$title);
+                    $li_a_heading->setAttribute('href',$href);
+
+                    $li_breadcrumbs = $html_block->createElement('li');
+                    $li_breadcrumbs->appendChild($li_a_heading);
+
                 }
 
-                $a_h4_heading  = $html_block->createElement('h4',$title);
-                $a_h4_heading->setAttribute('class','list-group-item-heading');
-
-                $a_p_heading  = $html_block->createElement('p',$content);
-                $a_p_heading->setAttribute('class','list-group-item-text');
-
-                $a_list_group_item->appendChild($a_h4_heading);
-                $a_list_group_item->appendChild($a_p_heading);
-
-                $dom_element->appendChild($a_list_group_item);
+                $dom_element->appendChild($li_breadcrumbs);
             }
 
             $add_container = $this->addContainer();
