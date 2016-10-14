@@ -234,7 +234,7 @@ namespace Component\HtmlBlock {
             if (empty($class)) {
                 $class = $this->getColMdDefault();
             }
- 
+
             $div_element = $this->createElement('div');
             $div_element->setAttribute('class',$class);
 
@@ -245,7 +245,7 @@ namespace Component\HtmlBlock {
             $html_node_body_div_container_row = $this->getHtmlNodeBodyDivContainerRow();
 
             foreach ($component_list as $component) {
-                if (!empty($component->getDomElement())) {
+                if (!empty($component) && !empty($component->getDomElement())) {
                     $div_element->appendChild($component->getDomElement());
                 }
             }
