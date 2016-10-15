@@ -12,6 +12,8 @@ namespace Component\HtmlBlock {
         private $title;
         private $title_url;
         private $title_img;
+        private $container_class;
+        private $container_style;
 
         public function __construct($html_block,...$kwargs) {
             $this->setHtmlBlock($html_block);
@@ -34,6 +36,12 @@ namespace Component\HtmlBlock {
 
             $title_img = Util::get($kwargs,'title_img',null);
             $this->setTitleImg($title_img);
+
+            $container_class = Util::get($kwargs,'container_class',null);
+            $this->setContainerClass($container_class);
+
+            $container_style = Util::get($kwargs,'container_style',null);
+            $this->setContainerStyle($container_style);
 
             $dom_element = $html_block->createElement('nav');
 
@@ -112,6 +120,37 @@ namespace Component\HtmlBlock {
 
         private function setTitleImg($title_img) {
             $this->title_img = $title_img;
+        }
+
+        private function getContainerClass() {
+            return $this->container_class;
+        }
+
+        private function setContainerClass($container_class) {
+            $this->container_class = $container_class;
+        }
+
+        private function getContainerStyle() {
+            return $this->container_style;
+        }
+
+        private function setContainerStyle($container_style) {
+            $this->container_style = $container_style;
+        }
+
+        private function addContainer() {
+            $html_block = $this->getHtmlBlock();
+            $dom_element = $this->getDomElement();
+            $container_class = $this->getContainerClass();
+            $container_style = $this->getContainerStyle();
+
+            $div_class_col = $html_block->createElement('div');
+            $div_class_col->setAttribute('class',$container_class);
+            $div_class_col->setAttribute('style',$container_style);
+
+            $div_class_col->appendChild($dom_element);
+
+            return $div_class_col;
         }
 
         private function ready() {
@@ -253,6 +292,9 @@ namespace Component\HtmlBlock {
             $div_container_fluid->appendChild($div_collapse);
 
             $dom_element->appendChild($div_container_fluid);
+
+            $add_container = $this->addContainer();
+            $this->setDomElement($add_container);
         }
 
         public function renderHtml() {
