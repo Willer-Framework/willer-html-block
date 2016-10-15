@@ -106,6 +106,14 @@ namespace Component\HtmlBlock {
             $this->html_block = $html_block;
         }
 
+        public function getDomElement() {
+            return $this->dom_element;
+        }
+
+        private function setDomElement($dom_element) {
+            $this->dom_element = $dom_element;
+        }
+
         private function getModel() {
             return $this->model;
         }
@@ -176,14 +184,6 @@ namespace Component\HtmlBlock {
 
         private function setContainerStyle($container_style) {
             $this->container_style = $container_style;
-        }
-
-        public function getDomElement() {
-            return $this->dom_element;
-        }
-
-        private function setDomElement($dom_element) {
-            $this->dom_element = $dom_element;
         }
 
         private function addFieldPrimaryKey($model,$schema,$field) {
@@ -266,6 +266,11 @@ namespace Component\HtmlBlock {
             $data_list = $data_list['data'];
 
             if (!empty($data_list)) {
+                $option = $html_block->createElement('option','---');
+                $option->setAttribute('value','');
+
+                $select->appendChild($option);
+
                 foreach ($data_list as $data) {
                     $option = $html_block->createElement('option',$data->$class_field_reference);
                     $option->setAttribute('value',$data->$class_field_primarykey);

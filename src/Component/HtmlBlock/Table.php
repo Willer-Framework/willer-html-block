@@ -30,9 +30,6 @@ namespace Component\HtmlBlock {
                 $kwargs = $kwargs[0];
             }
  
-            $value = Util::get($kwargs,'value',null);
-            $dom_element = $html_block->createElement('table',$value);
- 
             $model = Util::get($kwargs,'model',null);
             $this->setModel($model);
 
@@ -59,6 +56,8 @@ namespace Component\HtmlBlock {
  
             $container_style = Util::get($kwargs,'container_style',null);
             $this->setContainerStyle($container_style);
+
+            $dom_element = $html_block->createElement('table');
  
             if (isset($kwargs['id']) && !empty($kwargs['id'])) {
                 $dom_element->setAttribute('id',$kwargs['id']);
@@ -88,6 +87,14 @@ namespace Component\HtmlBlock {
  
         private function setHtmlBlock($html_block) {
             $this->html_block = $html_block;
+        }
+
+        public function getDomElement() {
+            return $this->dom_element;
+        }
+ 
+        private function setDomElement($dom_element) {
+            $this->dom_element = $dom_element;
         }
  
         private function getModel() {
@@ -168,14 +175,6 @@ namespace Component\HtmlBlock {
  
         private function setContainerStyle($container_style) {
             $this->container_style = $container_style;
-        }
- 
-        public function getDomElement() {
-            return $this->dom_element;
-        }
- 
-        private function setDomElement($dom_element) {
-            $this->dom_element = $dom_element;
         }
  
         private function getNodeTableThead() {
@@ -356,6 +355,18 @@ namespace Component\HtmlBlock {
                     }
 
                     if ($type == 'th' || $type == 'td') {
+                        if ($type == 'td') {
+                            if (array_key_exists('multiple',$object_schema[$field]->rule) && !empty($object_schema[$field]->rule['multiple'])) {
+                                foreach ($object_schema[$field]->rule['multiple'] as $multiple_dict) {
+                                    if (array_key_exists($value,$multiple_dict)) {
+                                        $value = $multiple_dict[$value];
+
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+
                         $table_tbody_tr_td_or_th_element = $html_block->createElement($type,$value);
                         $table_tr_element->appendChild($table_tbody_tr_td_or_th_element);
 
@@ -556,9 +567,9 @@ namespace Component\HtmlBlock {
             $this->setNodeTableTbody($node_table_tbody);
 
             $field_primary_key = null;
-            $model_primary_key = $model['data'][0];
+            $model_data = $model['data'][0];
 
-            foreach ($model_primary_key->schema() as $field => $schema) {
+            foreach ($model_data->schema() as $field => $schema) {
                 if ($schema->method == 'primaryKey') {
                     $field_primary_key = $field;
  
@@ -567,6 +578,7 @@ namespace Component\HtmlBlock {
             }
  
             foreach ($model['data'] as $data) {
+                $data_schema = $data->schema();
                 $table_tbody_tr_element = $html_block->createElement('tr');
  
                 foreach ($data as $field => $value) {
@@ -588,6 +600,16 @@ namespace Component\HtmlBlock {
                         $this->modelLoop($html_block,$table_tbody_tr_element,$field,$value,'td');
  
                     } else {
+                        if (array_key_exists('multiple',$data_schema[$field]->rule) && !empty($data_schema[$field]->rule['multiple'])) {
+                            foreach ($data_schema[$field]->rule['multiple'] as $multiple_dict) {
+                                if (array_key_exists((string) $value,$multiple_dict)) {
+                                    $value = $multiple_dict[$value];
+
+                                    break;
+                                }
+                            }
+                        }
+
                         $table_tbody_tr_td_element = $html_block->createElement('td',$value);
                         $table_tbody_tr_element->appendChild($table_tbody_tr_td_element);
                     }
