@@ -59,6 +59,14 @@ namespace Component\HtmlBlock {
             $this->html_block = $html_block;
         }
 
+        public function getDomElement() {
+            return $this->dom_element;
+        }
+
+        private function setDomElement($dom_element) {
+            $this->dom_element = $dom_element;
+        }
+
         private function getModel() {
             return $this->model;
         }
@@ -81,14 +89,6 @@ namespace Component\HtmlBlock {
  
         private function setContainerStyle($container_style) {
             $this->container_style = $container_style;
-        }
-
-        public function getDomElement() {
-            return $this->dom_element;
-        }
-
-        private function setDomElement($dom_element) {
-            $this->dom_element = $dom_element;
         }
 
         private function addContainer() {
@@ -118,18 +118,25 @@ namespace Component\HtmlBlock {
             }
 
             foreach ($model as $model_item) {
+                $message = Util::get($model_item,'message','');
+                $type = Util::get($model_item,'type',null);
+
                 $button = $html_block->createElement('button');
                 $button->setAttribute('type','button');
                 $button->setAttribute('class','close');
                 $button->setAttribute('data-dismiss','alert');
                 $button->setAttribute('aria-label','Close');
 
-                $span = $html_block->createElement('span','&times;');
-                $span->setAttribute('aria-hidden','true');
+                // $span = $html_block->createElement('span','&times;');
+                // $span->setAttribute('aria-hidden','true');
 
-                $button->appendChild($span);
+                // $button->appendChild($span);
 
-                $p = $html_block->createElement('p',$model_item);
+                $p = $html_block->createElement('p',$message);
+
+                if (!empty($type)) {
+                    $dom_element->setAttribute('class',vsprintf('alert %s alert-dismissible',[$type]));
+                }
 
                 $dom_element->appendChild($button);
                 $dom_element->appendChild($p);

@@ -225,6 +225,11 @@ namespace Component\HtmlBlock {
             $select->setAttribute('class','form-control');
             $select->setAttribute('id',vsprintf('%s-field-%s',[$element_id,$field]));
 
+            $option = $html_block->createElement('option','---');
+            $option->setAttribute('value','');
+
+            $select->appendChild($option);
+
             $db_transaction = new Transaction();
 
             $class = get_class($schema->rule['table']);
@@ -266,11 +271,6 @@ namespace Component\HtmlBlock {
             $data_list = $data_list['data'];
 
             if (!empty($data_list)) {
-                $option = $html_block->createElement('option','---');
-                $option->setAttribute('value','');
-
-                $select->appendChild($option);
-
                 foreach ($data_list as $data) {
                     $option = $html_block->createElement('option',$data->$class_field_reference);
                     $option->setAttribute('value',$data->$class_field_primarykey);

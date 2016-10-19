@@ -131,6 +131,7 @@ namespace Component\HtmlBlock {
                 $title = $model_data['title'] ?? null;
                 $content = $model_data['content'] ?? null;
                 $active = $model_data['active'] ?? null;
+                $icon = $model_data['icon'] ?? null;
 
                 $a_list_group_item = $html_block->createElement('a');
                 $a_list_group_item->setAttribute('href',$href);
@@ -142,8 +143,17 @@ namespace Component\HtmlBlock {
                     $a_list_group_item->setAttribute('class','list-group-item');
                 }
 
-                $a_h4_heading  = $html_block->createElement('h4',$title);
+                $a_h4_heading  = $html_block->createElement('h4');
                 $a_h4_heading->setAttribute('class','list-group-item-heading');
+
+                if (!empty($icon)) {
+                    $a_h4_span_heading = $html_block->createElement('span');
+                    $a_h4_span_heading->setAttribute('class',vsprintf('%s pull-right',[$icon,]));
+
+                    $a_h4_heading->appendChild($a_h4_span_heading);
+                }
+
+                $a_h4_heading->appendChild(new \DOMText($title));
 
                 $a_p_heading  = $html_block->createElement('p',$content);
                 $a_p_heading->setAttribute('class','list-group-item-text');

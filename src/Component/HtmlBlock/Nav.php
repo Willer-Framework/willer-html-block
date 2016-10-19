@@ -233,7 +233,12 @@ namespace Component\HtmlBlock {
                         $ul_li_navbar->appendChild($ul_li_a_navbar);
 
                     } else {
-                        $ul_li_navbar->setAttribute('class','dropdown');
+                        if (!empty($active)) {
+                            $ul_li_navbar->setAttribute('class','dropdown active');
+
+                        } else {
+                            $ul_li_navbar->setAttribute('class','dropdown');
+                        }
 
                         $ul_li_a_navbar->setAttribute('class','dropdown-toggle');
                         $ul_li_a_navbar->setAttribute('data-toggle','dropdown');
