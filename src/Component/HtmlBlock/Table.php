@@ -3,7 +3,7 @@
 namespace Component\HtmlBlock {
     use Core\{Request,Util};
     use Core\Exception\WException;
- 
+
     class Table {
         private $html_block;
         private $dom_element;
@@ -22,14 +22,14 @@ namespace Component\HtmlBlock {
         private $node_table_tfoot;
         private $node_panel_body;
         private $node_container;
- 
+
         public function __construct($html_block,...$kwargs) {
             $this->setHtmlBlock($html_block);
- 
+
             if (!empty($kwargs)) {
                 $kwargs = $kwargs[0];
             }
- 
+
             $model = Util::get($kwargs,'model',null);
             $this->setModel($model);
 
@@ -50,41 +50,41 @@ namespace Component\HtmlBlock {
 
             $footer = Util::get($kwargs,'footer',null);
             $this->setFooter($footer);
- 
+
             $container_class = Util::get($kwargs,'container_class',null);
             $this->setContainerClass($container_class);
- 
+
             $container_style = Util::get($kwargs,'container_style',null);
             $this->setContainerStyle($container_style);
 
             $dom_element = $html_block->createElement('table');
- 
+
             if (isset($kwargs['id']) && !empty($kwargs['id'])) {
                 $dom_element->setAttribute('id',$kwargs['id']);
                 $this->setId($kwargs['id']);
             }
- 
+
             if (isset($kwargs['class']) && !empty($kwargs['class'])) {
                 $dom_element->setAttribute('class',$kwargs['class']);
- 
+
             } else {
                 $dom_element->setAttribute('class','table table-striped table-bordered table-hover table-condensed');
             }
- 
+
             if (isset($kwargs['style']) && !empty($kwargs['style'])) {
                 $dom_element->setAttribute('style',$kwargs['style']);
             }
- 
+
             $this->setDomElement($dom_element);
             $this->ready();
- 
+
             return $this;
         }
- 
+
         private function getHtmlBlock() {
             return $this->html_block;
         }
- 
+
         private function setHtmlBlock($html_block) {
             $this->html_block = $html_block;
         }
@@ -92,15 +92,15 @@ namespace Component\HtmlBlock {
         public function getDomElement() {
             return $this->dom_element;
         }
- 
+
         private function setDomElement($dom_element) {
             $this->dom_element = $dom_element;
         }
- 
+
         private function getModel() {
             return $this->model;
         }
- 
+
         private function setModel($model) {
             $this->model = $model;
         }
@@ -108,7 +108,7 @@ namespace Component\HtmlBlock {
         private function getColumn() {
             return $this->column;
         }
- 
+
         private function setColumn($column) {
             $this->column = $column;
         }
@@ -116,7 +116,7 @@ namespace Component\HtmlBlock {
         private function getButton() {
             return $this->button;
         }
- 
+
         private function setButton($button) {
             $this->button = $button;
         }
@@ -124,7 +124,7 @@ namespace Component\HtmlBlock {
         private function getButtonExtra() {
             return $this->button_extra;
         }
- 
+
         private function setButtonExtra($button_extra) {
             $this->button_extra = $button_extra;
         }
@@ -160,43 +160,43 @@ namespace Component\HtmlBlock {
         private function setFooter($footer) {
             $this->footer = $footer;
         }
- 
+
         private function getContainerClass() {
             return $this->container_class;
         }
- 
+
         private function setContainerClass($container_class) {
             $this->container_class = $container_class;
         }
- 
+
         private function getContainerStyle() {
             return $this->container_style;
         }
- 
+
         private function setContainerStyle($container_style) {
             $this->container_style = $container_style;
         }
- 
+
         private function getNodeTableThead() {
             return $this->node_table_thead;
         }
- 
+
         private function setNodeTableThead($node_table_thead) {
             $this->node_table_thead = $node_table_thead;
         }
- 
+
         private function getNodeTableTbody() {
             return $this->node_table_tbody;
         }
- 
+
         private function setNodeTableTbody($node_table_tbody) {
             $this->node_table_tbody = $node_table_tbody;
         }
- 
+
         private function getNodeTableTfoot() {
             return $this->node_table_tfoot;
         }
- 
+
         private function setNodeTableTfoot($node_table_tfoot) {
             $this->node_table_tfoot = $node_table_tfoot;
         }
@@ -309,74 +309,98 @@ namespace Component\HtmlBlock {
             $dom_element->insertBefore($p_element);
         }
 
-        private function modelLoop($html_block,$table_tr_element,$field_name,$object,$type) {
+        private function modelLoop($html_block,$table_tr_element,$object,$object_column,$type) {
             $element_id = $this->getId();
             $column = $this->getColumn();
             $object_schema = $object->schema();
             $flag_label = null;
 
-            foreach ($object as $field => $value) {
-                $flag_label = false;
-                $field_label = $field;
+            foreach ($object_column as $key => $column_value) {
+                if (is_array($column_value) && !empty($column_value)) {
+                    $this->modelLoop($html_block,$table_tr_element,$object->$key,$column_value,$type);
 
-                if (is_object($value)) {
-                    $this->modelLoop($html_block,$table_tr_element,$field,$value,$type);
- 
                 } else {
-                    if (!empty($column)) {
-                        if (array_key_exists($field_name,$column) && !in_array($field,$column[$field_name])) {
-                            continue;
-                        }
-
-                        if (array_key_exists($field_name,$column) && in_array($field,$column[$field_name]) && array_key_exists('label',$object_schema[$field]->rule)) {
-                            $field_label = $object_schema[$field]->rule['label'];
-                            $flag_label = true;
-
-                        } else if (empty($flag_label) && in_array($field,$column) && array_key_exists('label',$object_schema[$field]->rule)) {
-                            $field_label = $object_schema[$field]->rule['label'];
-                            $flag_label = true;
-                        }
+                    if (!array_key_exists($column_value,$object)) {
+                        continue;
                     }
 
-                    if ($type == 'th') {
-                        if (!$flag_label) {
-                            $value = vsprintf('%s.%s',[$field_label,$field]);
+                    if (array_key_exists('multiple',$object_schema[$column_value]->rule) && !empty($object_schema[$column_value]->rule['multiple'])) {
+                        foreach ($object_schema[$column_value]->rule['multiple'] as $multiple_dict) {
+                            if (array_key_exists((string) $object->$column_value,$multiple_dict)) {
+                                $object->$column_value = $multiple_dict[$object->$column_value];
 
-                        } else {
-                            $value = $field_label;
-                        }
-
-                    } else if ($type == 'form') {
-                        $input = $html_block->createElement('input');
-                        $input->setAttribute('id',vsprintf('%s-search-%s-%s',[$element_id,$field_name,$field]));
-                        $input->setAttribute('class','form-control input-sm table-search-input');
-                        $input->setAttribute('type','text');
-                        $input->setAttribute('placeholder','...');
-                    }
-
-                    if ($type == 'th' || $type == 'td') {
-                        if ($type == 'td') {
-                            if (array_key_exists('multiple',$object_schema[$field]->rule) && !empty($object_schema[$field]->rule['multiple'])) {
-                                foreach ($object_schema[$field]->rule['multiple'] as $multiple_dict) {
-                                    if (array_key_exists($value,$multiple_dict)) {
-                                        $value = $multiple_dict[$value];
-
-                                        break;
-                                    }
-                                }
+                                break;
                             }
                         }
-
-                        $table_tbody_tr_td_or_th_element = $html_block->createElement($type,$value);
-                        $table_tr_element->appendChild($table_tbody_tr_td_or_th_element);
-
-                    } else if ($type == 'form') {
-                        $table_tbody_tr_td_or_th_element = $html_block->createElement('th','');
-                        $table_tbody_tr_td_or_th_element->appendChild($input);
-                        $table_tr_element->appendChild($table_tbody_tr_td_or_th_element);
                     }
+
+                    $table_tr_type_element = $html_block->createElement($type,$object->$column_value);
+                    $table_tr_element->appendChild($table_tr_type_element);
                 }
             }
+
+            // foreach ($object as $field => $value) {
+            //     $flag_label = false;
+            //     $field_label = $field;
+            //
+            //     if (is_object($value)) {
+            //         $this->modelLoop($html_block,$table_tr_element,$field,$value,$type);
+            //
+            //     } else {
+            //         if (!empty($column)) {
+            //             if (array_key_exists($field_name,$column) && !in_array($field,$column[$field_name])) {
+            //                 continue;
+            //             }
+            //
+            //             if (array_key_exists($field_name,$column) && in_array($field,$column[$field_name]) && array_key_exists('label',$object_schema[$field]->rule)) {
+            //                 $field_label = $object_schema[$field]->rule['label'];
+            //                 $flag_label = true;
+            //
+            //             } else if (empty($flag_label) && in_array($field,$column) && array_key_exists('label',$object_schema[$field]->rule)) {
+            //                 $field_label = $object_schema[$field]->rule['label'];
+            //                 $flag_label = true;
+            //             }
+            //         }
+            //
+            //         if ($type == 'th') {
+            //             if (!$flag_label) {
+            //                 $value = vsprintf('%s.%s',[$field_label,$field]);
+            //
+            //             } else {
+            //                 $value = $field_label;
+            //             }
+            //
+            //         } else if ($type == 'form') {
+            //             $input = $html_block->createElement('input');
+            //             $input->setAttribute('id',vsprintf('%s-search-%s-%s',[$element_id,$field_name,$field]));
+            //             $input->setAttribute('class','form-control input-sm table-search-input');
+            //             $input->setAttribute('type','text');
+            //             $input->setAttribute('placeholder','...');
+            //         }
+            //
+            //         if ($type == 'th' || $type == 'td') {
+            //             if ($type == 'td') {
+            //                 if (array_key_exists('multiple',$object_schema[$field]->rule) && !empty($object_schema[$field]->rule['multiple'])) {
+            //                     foreach ($object_schema[$field]->rule['multiple'] as $multiple_dict) {
+            //                         if (array_key_exists($value,$multiple_dict)) {
+            //                             $value = $multiple_dict[$value];
+            //
+            //                             break;
+            //                         }
+            //                     }
+            //                 }
+            //             }
+            //
+            //             $table_tbody_tr_td_or_th_element = $html_block->createElement($type,$value);
+            //             $table_tr_element->appendChild($table_tbody_tr_td_or_th_element);
+            //
+            //         } else if ($type == 'form') {
+            //             $table_tbody_tr_td_or_th_element = $html_block->createElement('th','');
+            //             $table_tbody_tr_td_or_th_element->appendChild($input);
+            //             $table_tr_element->appendChild($table_tbody_tr_td_or_th_element);
+            //         }
+            //     }
+            // }
         }
 
         private function addSearch() {
@@ -386,12 +410,12 @@ namespace Component\HtmlBlock {
             $node_table_thead = $this->getNodeTableThead();
             $column = $this->getColumn();
             $element_id = $this->getId();
- 
+
             $data = $model['data'][0];
 
             $table_thead_tr_element = $html_block->createElement('tr');
             $data_schema = $data->schema();
- 
+
             foreach ($data as $field => $value) {
                 if (!empty($column)) {
                     if (!in_array($field,$column)) {
@@ -409,7 +433,7 @@ namespace Component\HtmlBlock {
 
                 if (is_object($value)) {
                     $this->modelLoop($html_block,$table_thead_tr_element,$field,$value,'form');
- 
+
                 } else {
                     if (!empty($column)) {
                         if (!in_array($field,$column)) {
@@ -443,25 +467,25 @@ namespace Component\HtmlBlock {
             $table_thead_tr_th_element = $html_block->createElement('th');
             $table_thead_tr_th_element->appendChild($button);
             $table_thead_tr_element->appendChild($table_thead_tr_th_element);
- 
+
             $node_table_thead->appendChild($table_thead_tr_element);
         }
- 
+
         private function addThead() {
             $html_block = $this->getHtmlBlock();
             $dom_element = $this->getDomElement();
             $model = $this->getModel();
             $column = $this->getColumn();
- 
+
             $table_thead_element = $html_block->createElement('thead');
             $node_table_thead = $dom_element->appendChild($table_thead_element);
             $this->setNodeTableThead($node_table_thead);
 
             $data = $model['data'][0];
- 
+
             $table_thead_tr_element = $html_block->createElement('tr');
             $data_schema = $data->schema();
- 
+
             foreach ($data as $field => $value) {
                 $field_label = $field;
 
@@ -485,7 +509,7 @@ namespace Component\HtmlBlock {
 
                 if (is_object($value)) {
                     $this->modelLoop($html_block,$table_thead_tr_element,$field,$value,'th');
- 
+
                 } else {
                     $table_thead_tr_th_element = $html_block->createElement('th',$field_label);
                     $table_thead_tr_element->appendChild($table_thead_tr_th_element);
@@ -494,7 +518,7 @@ namespace Component\HtmlBlock {
 
             $table_thead_tr_th_element = $html_block->createElement('th');
             $table_thead_tr_element->appendChild($table_thead_tr_th_element);
- 
+
             $node_table_thead->appendChild($table_thead_tr_element);
         }
 
@@ -555,13 +579,13 @@ namespace Component\HtmlBlock {
 
             return $table_tbody_tr_element;
         }
- 
+
         private function addTbody() {
             $html_block = $this->getHtmlBlock();
             $dom_element = $this->getDomElement();
             $model = $this->getModel();
             $column = $this->getColumn();
- 
+
             $table_tbody_element = $html_block->createElement('tbody');
             $node_table_tbody = $dom_element->appendChild($table_tbody_element);
             $this->setNodeTableTbody($node_table_tbody);
@@ -572,53 +596,104 @@ namespace Component\HtmlBlock {
             foreach ($model_data->schema() as $field => $schema) {
                 if ($schema->method == 'primaryKey') {
                     $field_primary_key = $field;
- 
-                    break; 
+
+                    break;
                 }
             }
- 
+
             foreach ($model['data'] as $data) {
                 $data_schema = $data->schema();
                 $table_tbody_tr_element = $html_block->createElement('tr');
- 
-                foreach ($data as $field => $value) {
-                    if (!empty($column)) {
-                        if (!in_array($field,$column)) {
-                            $flag_column = false;
 
-                            if (array_key_exists($field,$column)) {
-                                $flag_column = true;
-                            }
+                // print '<pre>';
+                // print_r([
+                //     'data_schema' => $data_schema,
+                //     'array_keys_data_schema' => array_keys($data_schema),
+                //     'data' => $data,]);
+                // print '</pre>';
+                // exit();
 
-                            if (empty($flag_column)) {
-                                continue;
-                            }
-                        }
-                    }
+                foreach ($column as $key => $column_value) {
+                    if (is_array($column_value) && !empty($column_value)) {
+                        $this->modelLoop($html_block,$table_tbody_tr_element,$data->$key,$column_value,'td');
 
-                    if (is_object($value)) {
-                        $this->modelLoop($html_block,$table_tbody_tr_element,$field,$value,'td');
- 
                     } else {
-                        if (array_key_exists('multiple',$data_schema[$field]->rule) && !empty($data_schema[$field]->rule['multiple'])) {
-                            foreach ($data_schema[$field]->rule['multiple'] as $multiple_dict) {
-                                if (array_key_exists((string) $value,$multiple_dict)) {
-                                    $value = $multiple_dict[$value];
+                        if (!array_key_exists($column_value,$data)) {
+                            continue;
+                        }
+
+                        if (array_key_exists('multiple',$data_schema[$column_value]->rule) && !empty($data_schema[$column_value]->rule['multiple'])) {
+                            foreach ($data_schema[$column_value]->rule['multiple'] as $multiple_dict) {
+                                if (array_key_exists((string) $data->$column_value,$multiple_dict)) {
+                                    $data->$column_value = $multiple_dict[$data->$column_value];
 
                                     break;
                                 }
                             }
                         }
 
-                        $table_tbody_tr_td_element = $html_block->createElement('td',$value);
+                        $table_tbody_tr_td_element = $html_block->createElement('td',$data->$column_value);
                         $table_tbody_tr_element->appendChild($table_tbody_tr_td_element);
                     }
                 }
 
                 $table_tbody_tr_element = $this->addTableButton($table_tbody_tr_element,$data->$field_primary_key);
- 
+
                 $node_table_tbody->appendChild($table_tbody_tr_element);
             }
+
+            // print '<pre>';
+            // print_r([
+            //     'field_primary_key' => $field_primary_key,
+            //     'column' => $column,
+            //     'column_foreign_key' => $column_foreign_key,
+            //     'column_field' => $column_field,
+            //     'model_[_data_]' => $model['data']]);
+            // print '</pre>';
+            // exit();
+
+            // foreach ($model['data'] as $data) {
+            //     $data_schema = $data->schema();
+            //     $table_tbody_tr_element = $html_block->createElement('tr');
+            //
+            //     foreach ($data as $field => $value) {
+            //         if (!empty($column)) {
+            //             if (!in_array($field,$column)) {
+            //                 $flag_column = false;
+            //
+            //                 if (array_key_exists($field,$column)) {
+            //                     $flag_column = true;
+            //                 }
+            //
+            //                 if (empty($flag_column)) {
+            //                     continue;
+            //                 }
+            //             }
+            //         }
+            //
+            //         if (is_object($value)) {
+            //             $this->modelLoop($html_block,$table_tbody_tr_element,$field,$value,'td');
+            //
+            //         } else {
+            //             if (array_key_exists('multiple',$data_schema[$field]->rule) && !empty($data_schema[$field]->rule['multiple'])) {
+            //                 foreach ($data_schema[$field]->rule['multiple'] as $multiple_dict) {
+            //                     if (array_key_exists((string) $value,$multiple_dict)) {
+            //                         $value = $multiple_dict[$value];
+            //
+            //                         break;
+            //                     }
+            //                 }
+            //             }
+            //
+            //             $table_tbody_tr_td_element = $html_block->createElement('td',$value);
+            //             $table_tbody_tr_element->appendChild($table_tbody_tr_td_element);
+            //         }
+            //     }
+            //
+            //     $table_tbody_tr_element = $this->addTableButton($table_tbody_tr_element,$data->$field_primary_key);
+            //
+            //     $node_table_tbody->appendChild($table_tbody_tr_element);
+            // }
         }
 
         private function addPanel() {
@@ -627,20 +702,20 @@ namespace Component\HtmlBlock {
             $title = $this->getTitle();
             $text = $this->getText();
             $footer = $this->getFooter();
- 
+
             if (empty($title) && empty($text) && empty($footer)) {
                 return false;
             }
- 
+
             $div_class_panel = $html_block->createElement('div');
             $div_class_panel->setAttribute('class','panel panel-default');
- 
+
             if (!empty($title)) {
                 $div_class_panel_head = $html_block->createElement('div',$title);
                 $div_class_panel_head->setAttribute('class','panel-heading');
                 $node_div_panel_head = $div_class_panel->appendChild($div_class_panel_head);
             }
- 
+
             $div_class_panel_body = $html_block->createElement('div');
 
             if (!empty($text)) {
@@ -652,29 +727,29 @@ namespace Component\HtmlBlock {
             $node_div_panel_body = $div_class_panel->appendChild($div_class_panel_body);
             $node_div_panel_body->appendChild($dom_element);
             $this->setNodePanelBody($node_div_panel_body);
- 
+
             if (!empty($footer)) {
                 $div_class_panel_footer = $html_block->createElement('div',$footer);
                 $div_class_panel_footer->setAttribute('class','panel-footer');
                 $node_div_panel_footer = $div_class_panel->appendChild($div_class_panel_footer);
             }
- 
+
             $this->setDomElement($div_class_panel);
         }
- 
+
         private function addContainer() {
             $html_block = $this->getHtmlBlock();
             $dom_element = $this->getDomElement();
             $container_class = $this->getContainerClass();
             $container_style = $this->getContainerStyle();
- 
+
             $div_class_col = $html_block->createElement('div');
             $div_class_col->setAttribute('class',$container_class);
             $div_class_col->setAttribute('style',$container_style);
 
              $div_class_col->appendChild($dom_element);
 
-            $this->setNodeContainer($div_class_col); 
+            $this->setNodeContainer($div_class_col);
             $this->setDomElement($div_class_col);
         }
 
@@ -778,7 +853,7 @@ namespace Component\HtmlBlock {
 
             $table_tfoot_element = $html_block->createElement('tfoot');
             $node_table_tfoot = $dom_element->appendChild($table_tfoot_element);
-            $this->setNodeTableTfoot($node_table_tfoot);            
+            $this->setNodeTableTfoot($node_table_tfoot);
         }
 
         private function ready() {
@@ -795,21 +870,21 @@ namespace Component\HtmlBlock {
             }
 
             $this->addButton();
-            $this->addThead();
-            $this->addSearch();
+            // $this->addThead();
+            // $this->addSearch();
             $this->addTbody();
             $this->addTfoot();
             $this->addPanel();
             $this->addContainer();
             $this->addPagination();
         }
- 
+
         public function renderHtml() {
             $html_block = $this->getHtmlBlock();
             $dom_element = $this->getDomElement();
- 
+
             $html_block->appendBodyContainerRow($dom_element);
- 
+
             return $html_block->renderHtml();
         }
     }
