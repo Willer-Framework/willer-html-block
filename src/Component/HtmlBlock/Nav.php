@@ -173,9 +173,14 @@ namespace Component\HtmlBlock {
                     $img_brand = $html_block->createElement('img');
                     $img_brand->setAttribute('src',$title_img);
                     $img_brand->setAttribute('alt',$title);
+                    $img_brand->setAttribute('style','float: left;margin-right: 5px;');
+                    $img_brand->setAttribute('width','20');
+                    $img_brand->setAttribute('height','20');
 
                     $a_brand = $html_block->createElement('a');
                     $a_brand->appendChild($img_brand);
+
+                    $a_brand->appendChild(new \DOMText($title));
 
                 } else {
                     $a_brand = $html_block->createElement('a',$title);
