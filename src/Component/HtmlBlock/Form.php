@@ -9,9 +9,9 @@ namespace Component\HtmlBlock {
         private $html_block;
         private $dom_element;
         private $model;
-        private $label;
         private $id;
         private $type;
+        private $button;
         private $title;
         private $text;
         private $footer;
@@ -28,11 +28,11 @@ namespace Component\HtmlBlock {
             $model = Util::get($kwargs,'model',null);
             $this->setModel($model);
 
-            $label = Util::get($kwargs,'label',null);
-            $this->setLabel($label);
-
             $type = Util::get($kwargs,'type',null);
             $this->setType($type);
+
+            $button = Util::get($kwargs,'button',null);
+            $this->setButton($button);
 
             $title = Util::get($kwargs,'title',null);
             $this->setTitle($title);
@@ -122,14 +122,6 @@ namespace Component\HtmlBlock {
             $this->model = $model;
         }
 
-        private function getLabel() {
-            return $this->label;
-        }
-
-        private function setLabel($label) {
-            $this->label = $label;
-        }
-
         private function getId() {
             return $this->id;
         }
@@ -144,6 +136,14 @@ namespace Component\HtmlBlock {
 
         private function setType($type) {
             $this->type = $type;
+        }
+
+        private function getButton() {
+            return $this->button;
+        }
+
+        private function setButton($button) {
+            $this->button = $button;
         }
 
         private function getTitle() {
@@ -211,6 +211,10 @@ namespace Component\HtmlBlock {
 
             if (array_key_exists('label',$schema->rule) && !empty($schema->rule['label'])) {
                 $field_label = $schema->rule['label'];
+            }
+
+            if (!array_key_exists('null',$schema->rule) || (array_key_exists('null',$schema->rule) && empty($schema->rule['null']))) {
+                $field_label = vsprintf('%s*',[$field_label,]);
             }
 
             $label = $html_block->createElement('label',$field_label);
@@ -313,6 +317,10 @@ namespace Component\HtmlBlock {
                 $field_label = $schema->rule['label'];
             }
 
+            if (!array_key_exists('null',$schema->rule) || (array_key_exists('null',$schema->rule) && empty($schema->rule['null']))) {
+                $field_label = vsprintf('%s*',[$field_label,]);
+            }
+
             $label = $html_block->createElement('label',$field_label);
             $label->setAttribute('for',vsprintf('%s-field-%s',[$element_id,$field]));
 
@@ -376,6 +384,10 @@ namespace Component\HtmlBlock {
                 $field_label = $schema->rule['label'];
             }
 
+            if (!array_key_exists('null',$schema->rule) || (array_key_exists('null',$schema->rule) && empty($schema->rule['null']))) {
+                $field_label = vsprintf('%s*',[$field_label,]);
+            }
+
             $label = $html_block->createElement('label');
 
             $paragraph = $html_block->createElement('p',$field_label);
@@ -430,6 +442,10 @@ namespace Component\HtmlBlock {
                 $field_label = $schema->rule['label'];
             }
 
+            if (!array_key_exists('null',$schema->rule) || (array_key_exists('null',$schema->rule) && empty($schema->rule['null']))) {
+                $field_label = vsprintf('%s*',[$field_label,]);
+            }
+
             $label = $html_block->createElement('label',$field_label);
             $label->setAttribute('for',vsprintf('%s-field-%s',[$element_id,$field]));
 
@@ -471,6 +487,10 @@ namespace Component\HtmlBlock {
 
             if (array_key_exists('label',$schema->rule) && !empty($schema->rule['label'])) {
                 $field_label = $schema->rule['label'];
+            }
+
+            if (!array_key_exists('null',$schema->rule) || (array_key_exists('null',$schema->rule) && empty($schema->rule['null']))) {
+                $field_label = vsprintf('%s*',[$field_label,]);
             }
 
             $label = $html_block->createElement('label',$field_label);
@@ -517,6 +537,10 @@ namespace Component\HtmlBlock {
                 $field_label = $schema->rule['label'];
             }
 
+            if (!array_key_exists('null',$schema->rule) || (array_key_exists('null',$schema->rule) && empty($schema->rule['null']))) {
+                $field_label = vsprintf('%s*',[$field_label,]);
+            }
+
             $label = $html_block->createElement('label',$field_label);
             $label->setAttribute('for',vsprintf('%s-field-%s',[$element_id,$field]));
 
@@ -559,6 +583,10 @@ namespace Component\HtmlBlock {
 
             if (array_key_exists('label',$schema->rule) && !empty($schema->rule['label'])) {
                 $field_label = $schema->rule['label'];
+            }
+
+            if (!array_key_exists('null',$schema->rule) || (array_key_exists('null',$schema->rule) && empty($schema->rule['null']))) {
+                $field_label = vsprintf('%s*',[$field_label,]);
             }
 
             $label = $html_block->createElement('label',$field_label);
@@ -604,6 +632,60 @@ namespace Component\HtmlBlock {
             } else {
                 $div->appendChild($label);
                 $div->appendChild($div_group);
+            }
+
+            return $div;
+        }
+
+        private function addButton() {
+            $html_block = $this->getHtmlBlock();
+            $dom_element = $this->getDomElement();
+            $element_id = $this->getId();
+            $button = $this->getButton();
+
+            $div = $html_block->createElement('div');
+            $div->setAttribute('class','btn-group');
+            $div->setAttribute('role','group');
+            $div->setAttribute('aria-label','...');
+
+            if (empty($button)) {
+                return $div;
+            }
+
+            foreach ($button as $button_type => $button_attribute) {
+                if ($button_type == 'submit') {
+                    $title = $button_attribute['title'] ?? null;
+                    $icon = $button_attribute['icon'] ?? null;
+                    $class = $button_attribute['class'] ?? null;
+                    $style = $button_attribute['style'] ?? null;
+
+                    $button = $html_block->createElement('button');
+                    $button->setAttribute('type','submit');
+                    $button->setAttribute('id',vsprintf('%s-field-button-save',[$element_id,]));
+
+                    if (!empty($class)) {
+                        $button->setAttribute('class',$class);
+
+                    } else {
+                        $button->setAttribute('class','btn btn-default');
+                    }
+
+                    if (!empty($style)) {
+                        $button->setAttribute('style',$style);
+
+                    }
+
+                    if (!empty($icon)) {
+                        $span = $html_block->createElement('span');
+                        $span->setAttribute('class',$icon);
+
+                        $button->appendChild($span);
+                    }
+
+                    $button->appendChild(new \DOMText($title));
+
+                    $div->appendChild($button);
+                }
             }
 
             return $div;
@@ -740,30 +822,22 @@ namespace Component\HtmlBlock {
                 }
             }
 
-            $span = $html_block->createElement('span');
-            $span->setAttribute('class','glyphicon glyphicon-ok-sign');
-
-            $button = $html_block->createElement('button');
-            $button->setAttribute('type','submit');
-            $button->setAttribute('id',vsprintf('%s-field-button-save',[$element_id,]));
-            $button->setAttribute('class','btn btn-default');
-
-            $button->appendChild($span);
-            $button->appendChild(new \DOMText(' Salvar'));
-
             if (!empty($type) && $type == 'horizontal') {
                 $div_space_type_horizontal = $html_block->createElement('div');
                 $div_space_type_horizontal->setAttribute('class','col-sm-2');
 
                 $div_type_horizontal = $html_block->createElement('div');
                 $div_type_horizontal->setAttribute('class','col-sm-10');
-                $div_type_horizontal->appendChild($button);
+
+                $div_button = $this->addButton();
+                $div_type_horizontal->appendChild($div_button);
 
                 $dom_element->appendChild($div_space_type_horizontal);
                 $dom_element->appendChild($div_type_horizontal);
 
             } else {
-                $dom_element->appendChild($button);
+                $div_button = $this->addButton();
+                $dom_element->appendChild($div_button);
             }
 
             $this->addPanel();
