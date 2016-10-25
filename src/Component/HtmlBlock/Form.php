@@ -740,10 +740,16 @@ namespace Component\HtmlBlock {
                 }
             }
 
-            $button = $html_block->createElement('button','Salvar');
+            $span = $html_block->createElement('span');
+            $span->setAttribute('class','glyphicon glyphicon-ok-sign');
+
+            $button = $html_block->createElement('button');
             $button->setAttribute('type','submit');
             $button->setAttribute('id',vsprintf('%s-field-button-save',[$element_id,]));
             $button->setAttribute('class','btn btn-default');
+
+            $button->appendChild($span);
+            $button->appendChild(new \DOMText(' Salvar'));
 
             if (!empty($type) && $type == 'horizontal') {
                 $div_space_type_horizontal = $html_block->createElement('div');
