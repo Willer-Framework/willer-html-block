@@ -473,8 +473,8 @@ namespace Component\HtmlBlock {
 
             $request = new Request;
 
-            if (array_key_exists('update',$button)) {
-                $href = !empty($button['update']) ? $button['update']($id) : vsprintf('?%s-edit=%s',[$element_id,$id]);
+            if (array_key_exists('update',$button) && !empty($button['update'])) {
+                $href = $button['update']($id);
 
                 $a_div_td_tr_tbody = $html_block->createElement('a');
                 $a_div_td_tr_tbody->setAttribute('href',$href);
@@ -490,8 +490,8 @@ namespace Component\HtmlBlock {
                 $div_td_tr_tbody->appendChild($a_div_td_tr_tbody);
             }
 
-            if (array_key_exists('delete',$button)) {
-                $href = !empty($button['delete']) ? $button['delete']($id) : vsprintf('?%s-remove=%s',[$element_id,$id]);
+            if (array_key_exists('delete',$button) && !empty($button['delete'])) {
+                $href = $button['delete']($id);
 
                 $a_div_td_tr_tbody = $html_block->createElement('a');
                 $a_div_td_tr_tbody->setAttribute('href',$href);
