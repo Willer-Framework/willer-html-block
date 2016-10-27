@@ -5,8 +5,7 @@ namespace Component\HtmlBlock {
     use Core\{Util,Request};
     use Core\Exception\WException;
 
-    class Form {
-        private $html_block;
+    class Form {        private $html_block;
         private $dom_element;
         private $model;
         private $id;
@@ -334,11 +333,11 @@ namespace Component\HtmlBlock {
                 $select_or_input->setAttribute('class','form-control');
                 $select_or_input->setAttribute('id',vsprintf('%s-field-%s',[$element_id,$field]));
 
-                foreach ($schema->rule['multiple'] as $data) {
-                    $option = $html_block->createElement('option',current($data));
-                    $option->setAttribute('value',key($data));
+                foreach ($schema->rule['multiple'] as $key => $value) {
+                    $option = $html_block->createElement('option',$value);
+                    $option->setAttribute('value',$key);
 
-                    if (!empty($model->$field) && $model->$field == key($data)) {
+                    if (!empty($model->$field) && $model->$field == $key) {
                         $option->setAttribute('selected','selected');
                     }
 
@@ -346,10 +345,17 @@ namespace Component\HtmlBlock {
                 }
 
             } else {
+                $input_type = 'text';
+
+                if (array_key_exists('password',$schema->rule) && !empty($schema->rule['password'])) {
+                    $model->$field = null;
+                    $input_type = 'password';
+                }
+
                 $select_or_input = $html_block->createElement('input');
                 $select_or_input->setAttribute('name',$field);
                 $select_or_input->setAttribute('value',$model->$field);
-                $select_or_input->setAttribute('type','text');
+                $select_or_input->setAttribute('type',$input_type);
                 $select_or_input->setAttribute('class','form-control');
                 $select_or_input->setAttribute('id',vsprintf('%s-field-%s',[$element_id,$field]));
             }
