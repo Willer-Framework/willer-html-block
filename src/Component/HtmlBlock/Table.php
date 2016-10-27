@@ -326,13 +326,13 @@ namespace Component\HtmlBlock {
                     }
 
                     if ($type == 'th') {
-                        $object->$column_value = $column_value;
+                        $object_column_value_label = $column_value;
 
                         if (array_key_exists('label',$object_schema[$column_value]->rule) && !empty($object_schema[$column_value]->rule['label'])) {
-                            $object->$column_value = $object_schema[$column_value]->rule['label'];
+                            $object_column_value_label = $object_schema[$column_value]->rule['label'];
                         }
 
-                        $table_tr_type_element = $html_block->createElement($type,$object->$column_value);
+                        $table_tr_type_element = $html_block->createElement($type,$object_column_value_label);
                         $table_tr_element->appendChild($table_tr_type_element);
 
                     } else if ($type == 'form') {
