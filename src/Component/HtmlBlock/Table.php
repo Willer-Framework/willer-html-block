@@ -549,12 +549,8 @@ namespace Component\HtmlBlock {
                         }
 
                         if (array_key_exists('multiple',$data_schema[$column_value]->rule) && !empty($data_schema[$column_value]->rule['multiple'])) {
-                            foreach ($data_schema[$column_value]->rule['multiple'] as $multiple_dict) {
-                                if (array_key_exists((string) $data->$column_value,$multiple_dict)) {
-                                    $data->$column_value = $multiple_dict[$data->$column_value];
-
-                                    break;
-                                }
+                            if (array_key_exists((string) $data->$column_value,$data_schema[$column_value]->rule['multiple'])) {
+                                $data->$column_value = $data_schema[$column_value]->rule['multiple'][$data->$column_value];
                             }
                         }
 
