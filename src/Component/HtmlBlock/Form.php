@@ -5,7 +5,8 @@ namespace Component\HtmlBlock {
     use Core\{Util,Request};
     use Core\Exception\WException;
 
-    class Form {        private $html_block;
+    class Form {
+        private $html_block;
         private $dom_element;
         private $model;
         private $id;
@@ -246,8 +247,12 @@ namespace Component\HtmlBlock {
             foreach ($class_schema as $field_ => $object_schema) {
                 if ($object_schema->method == 'primaryKey') {
                     $class_field_primarykey = $field_;
-                }
 
+                    break;
+                }
+            }
+
+            foreach ($class_schema as $field_ => $object_schema) {
                 if (empty($class_field_reference) && $object_schema->method == 'char') {
                     $class_field_reference = $field_;
                 }
@@ -255,9 +260,7 @@ namespace Component\HtmlBlock {
                 if (array_key_exists('reference',$object_schema->rule) && $object_schema->rule['reference'] === true) {
                     $class_field_reference = $field_;
 
-                    if (!empty($class_field_primarykey)) {
-                        break;
-                    }
+                    break;
                 }
             }
 
@@ -278,7 +281,7 @@ namespace Component\HtmlBlock {
                     $option = $html_block->createElement('option',$data->$class_field_reference);
                     $option->setAttribute('value',$data->$class_field_primarykey);
 
-                    if (!empty($model->$field) && $model->$field->$class_field_primarykey == $data->$class_field_primarykey) {
+                    if (!empty($model->$field) && $model->$class_field_primarykey == $data->$class_field_primarykey) {
                         $option->setAttribute('selected','selected');
                     }
 
