@@ -312,6 +312,7 @@ namespace Component\HtmlBlock {
         private function modelLoop($html_block,$table_tr_element,$object,$object_column,$type) {
             $element_id = $this->getId();
             $column = $this->getColumn();
+            $object_table_name = $object->getTableName();
             $object_schema = $object->schema();
             $flag_label = null;
 
@@ -324,89 +325,48 @@ namespace Component\HtmlBlock {
                         continue;
                     }
 
-                    if (array_key_exists('multiple',$object_schema[$column_value]->rule) && !empty($object_schema[$column_value]->rule['multiple'])) {
-                        foreach ($object_schema[$column_value]->rule['multiple'] as $multiple_dict) {
-                            if (array_key_exists((string) $object->$column_value,$multiple_dict)) {
-                                $object->$column_value = $multiple_dict[$object->$column_value];
+                    if ($type == 'th') {
+                        $object_column_value_label = $column_value;
 
-                                break;
+                        if (array_key_exists('label',$object_schema[$column_value]->rule) && !empty($object_schema[$column_value]->rule['label'])) {
+                            $object_column_value_label = $object_schema[$column_value]->rule['label'];
+                        }
+
+                        $table_tr_type_element = $html_block->createElement($type,$object_column_value_label);
+                        $table_tr_element->appendChild($table_tr_type_element);
+
+                    } else if ($type == 'form') {
+                        $input = $html_block->createElement('input');
+                        $input->setAttribute('id',vsprintf('%s-search-%s-%s',[$element_id,$object_table_name,$column_value]));
+                        $input->setAttribute('class','form-control input-sm table-search-input');
+                        $input->setAttribute('type','text');
+                        $input->setAttribute('placeholder','...');
+
+                        $table_tr_type_element = $html_block->createElement('th');
+                        $table_tr_type_element->appendChild($input);
+                        $table_tr_element->appendChild($table_tr_type_element);
+
+                    } else if ($type == 'td') {
+                        if (array_key_exists('multiple',$object_schema[$column_value]->rule) && !empty($object_schema[$column_value]->rule['multiple'])) {
+                            foreach ($object_schema[$column_value]->rule['multiple'] as $multiple_dict) {
+                                if (array_key_exists((string) $object->$column_value,$multiple_dict)) {
+                                    $object->$column_value = $multiple_dict[$object->$column_value];
+
+                                    break;
+                                }
                             }
                         }
-                    }
 
-                    $table_tr_type_element = $html_block->createElement($type,$object->$column_value);
-                    $table_tr_element->appendChild($table_tr_type_element);
+                        $table_tr_type_element = $html_block->createElement($type,$object->$column_value);
+                        $table_tr_element->appendChild($table_tr_type_element);
+                    }
                 }
             }
-
-            // foreach ($object as $field => $value) {
-            //     $flag_label = false;
-            //     $field_label = $field;
-            //
-            //     if (is_object($value)) {
-            //         $this->modelLoop($html_block,$table_tr_element,$field,$value,$type);
-            //
-            //     } else {
-            //         if (!empty($column)) {
-            //             if (array_key_exists($field_name,$column) && !in_array($field,$column[$field_name])) {
-            //                 continue;
-            //             }
-            //
-            //             if (array_key_exists($field_name,$column) && in_array($field,$column[$field_name]) && array_key_exists('label',$object_schema[$field]->rule)) {
-            //                 $field_label = $object_schema[$field]->rule['label'];
-            //                 $flag_label = true;
-            //
-            //             } else if (empty($flag_label) && in_array($field,$column) && array_key_exists('label',$object_schema[$field]->rule)) {
-            //                 $field_label = $object_schema[$field]->rule['label'];
-            //                 $flag_label = true;
-            //             }
-            //         }
-            //
-            //         if ($type == 'th') {
-            //             if (!$flag_label) {
-            //                 $value = vsprintf('%s.%s',[$field_label,$field]);
-            //
-            //             } else {
-            //                 $value = $field_label;
-            //             }
-            //
-            //         } else if ($type == 'form') {
-            //             $input = $html_block->createElement('input');
-            //             $input->setAttribute('id',vsprintf('%s-search-%s-%s',[$element_id,$field_name,$field]));
-            //             $input->setAttribute('class','form-control input-sm table-search-input');
-            //             $input->setAttribute('type','text');
-            //             $input->setAttribute('placeholder','...');
-            //         }
-            //
-            //         if ($type == 'th' || $type == 'td') {
-            //             if ($type == 'td') {
-            //                 if (array_key_exists('multiple',$object_schema[$field]->rule) && !empty($object_schema[$field]->rule['multiple'])) {
-            //                     foreach ($object_schema[$field]->rule['multiple'] as $multiple_dict) {
-            //                         if (array_key_exists($value,$multiple_dict)) {
-            //                             $value = $multiple_dict[$value];
-            //
-            //                             break;
-            //                         }
-            //                     }
-            //                 }
-            //             }
-            //
-            //             $table_tbody_tr_td_or_th_element = $html_block->createElement($type,$value);
-            //             $table_tr_element->appendChild($table_tbody_tr_td_or_th_element);
-            //
-            //         } else if ($type == 'form') {
-            //             $table_tbody_tr_td_or_th_element = $html_block->createElement('th','');
-            //             $table_tbody_tr_td_or_th_element->appendChild($input);
-            //             $table_tr_element->appendChild($table_tbody_tr_td_or_th_element);
-            //         }
-            //     }
-            // }
         }
 
         private function addSearch() {
-            $model = $this->getModel();
-
             $html_block = $this->getHtmlBlock();
+            $model = $this->getModel();
             $node_table_thead = $this->getNodeTableThead();
             $column = $this->getColumn();
             $element_id = $this->getId();
@@ -414,35 +374,21 @@ namespace Component\HtmlBlock {
             $data = $model['data'][0];
 
             $table_thead_tr_element = $html_block->createElement('tr');
+
             $data_schema = $data->schema();
+            $data_table_name = $data->getTableName();
 
-            foreach ($data as $field => $value) {
-                if (!empty($column)) {
-                    if (!in_array($field,$column)) {
-                        $flag_column = false;
-
-                        if (array_key_exists($field,$column)) {
-                            $flag_column = true;
-                        }
-
-                        if (empty($flag_column)) {
-                            continue;
-                        }
-                    }
-                }
-
-                if (is_object($value)) {
-                    $this->modelLoop($html_block,$table_thead_tr_element,$field,$value,'form');
+            foreach ($column as $key => $column_value) {
+                if (is_array($column_value) && !empty($column_value)) {
+                    $this->modelLoop($html_block,$table_thead_tr_element,$data->$key,$column_value,'form');
 
                 } else {
-                    if (!empty($column)) {
-                        if (!in_array($field,$column)) {
-                            continue;
-                        }
+                    if (!array_key_exists($column_value,$data)) {
+                        continue;
                     }
 
                     $input = $html_block->createElement('input');
-                    $input->setAttribute('id',vsprintf('%s-search-%s',[$element_id,$field]));
+                    $input->setAttribute('id',vsprintf('%s-search-%s-%s',[$element_id,$data_table_name,$column_value]));
                     $input->setAttribute('class','form-control input-sm table-search-input');
                     $input->setAttribute('type','text');
                     $input->setAttribute('placeholder','...');
@@ -486,32 +432,20 @@ namespace Component\HtmlBlock {
             $table_thead_tr_element = $html_block->createElement('tr');
             $data_schema = $data->schema();
 
-            foreach ($data as $field => $value) {
-                $field_label = $field;
-
-                if (!empty($column)) {
-                    if (!in_array($field,$column)) {
-                        $flag_column = false;
-
-                        if (array_key_exists($field,$column)) {
-                            $flag_column = true;
-                        }
-
-                        if (empty($flag_column)) {
-                            continue;
-                        }
-                    }
-
-                    if (array_key_exists('label',$data_schema[$field]->rule)) {
-                        $field_label = $data_schema[$field]->rule['label'];
-                    }
-                }
-
-                if (is_object($value)) {
-                    $this->modelLoop($html_block,$table_thead_tr_element,$field,$value,'th');
+            foreach ($column as $key => $column_value) {
+                if (is_array($column_value) && !empty($column_value)) {
+                    $this->modelLoop($html_block,$table_thead_tr_element,$data->$key,$column_value,'th');
 
                 } else {
-                    $table_thead_tr_th_element = $html_block->createElement('th',$field_label);
+                    if (!array_key_exists($column_value,$data)) {
+                        continue;
+                    }
+
+                    if (array_key_exists('label',$data_schema[$column_value]->rule)) {
+                        $column_value = $data_schema[$column_value]->rule['label'];
+                    }
+
+                    $table_thead_tr_th_element = $html_block->createElement('th',$column_value);
                     $table_thead_tr_element->appendChild($table_thead_tr_th_element);
                 }
             }
@@ -539,8 +473,8 @@ namespace Component\HtmlBlock {
 
             $request = new Request;
 
-            if (array_key_exists('update',$button)) {
-                $href = !empty($button['update']) ? $button['update']($id) : vsprintf('?%s-edit=%s',[$element_id,$id]);
+            if (array_key_exists('update',$button) && !empty($button['update'])) {
+                $href = $button['update']($id);
 
                 $a_div_td_tr_tbody = $html_block->createElement('a');
                 $a_div_td_tr_tbody->setAttribute('href',$href);
@@ -556,8 +490,8 @@ namespace Component\HtmlBlock {
                 $div_td_tr_tbody->appendChild($a_div_td_tr_tbody);
             }
 
-            if (array_key_exists('delete',$button)) {
-                $href = !empty($button['delete']) ? $button['delete']($id) : vsprintf('?%s-remove=%s',[$element_id,$id]);
+            if (array_key_exists('delete',$button) && !empty($button['delete'])) {
+                $href = $button['delete']($id);
 
                 $a_div_td_tr_tbody = $html_block->createElement('a');
                 $a_div_td_tr_tbody->setAttribute('href',$href);
@@ -605,14 +539,6 @@ namespace Component\HtmlBlock {
                 $data_schema = $data->schema();
                 $table_tbody_tr_element = $html_block->createElement('tr');
 
-                // print '<pre>';
-                // print_r([
-                //     'data_schema' => $data_schema,
-                //     'array_keys_data_schema' => array_keys($data_schema),
-                //     'data' => $data,]);
-                // print '</pre>';
-                // exit();
-
                 foreach ($column as $key => $column_value) {
                     if (is_array($column_value) && !empty($column_value)) {
                         $this->modelLoop($html_block,$table_tbody_tr_element,$data->$key,$column_value,'td');
@@ -623,12 +549,8 @@ namespace Component\HtmlBlock {
                         }
 
                         if (array_key_exists('multiple',$data_schema[$column_value]->rule) && !empty($data_schema[$column_value]->rule['multiple'])) {
-                            foreach ($data_schema[$column_value]->rule['multiple'] as $multiple_dict) {
-                                if (array_key_exists((string) $data->$column_value,$multiple_dict)) {
-                                    $data->$column_value = $multiple_dict[$data->$column_value];
-
-                                    break;
-                                }
+                            if (array_key_exists((string) $data->$column_value,$data_schema[$column_value]->rule['multiple'])) {
+                                $data->$column_value = $data_schema[$column_value]->rule['multiple'][$data->$column_value];
                             }
                         }
 
@@ -641,59 +563,6 @@ namespace Component\HtmlBlock {
 
                 $node_table_tbody->appendChild($table_tbody_tr_element);
             }
-
-            // print '<pre>';
-            // print_r([
-            //     'field_primary_key' => $field_primary_key,
-            //     'column' => $column,
-            //     'column_foreign_key' => $column_foreign_key,
-            //     'column_field' => $column_field,
-            //     'model_[_data_]' => $model['data']]);
-            // print '</pre>';
-            // exit();
-
-            // foreach ($model['data'] as $data) {
-            //     $data_schema = $data->schema();
-            //     $table_tbody_tr_element = $html_block->createElement('tr');
-            //
-            //     foreach ($data as $field => $value) {
-            //         if (!empty($column)) {
-            //             if (!in_array($field,$column)) {
-            //                 $flag_column = false;
-            //
-            //                 if (array_key_exists($field,$column)) {
-            //                     $flag_column = true;
-            //                 }
-            //
-            //                 if (empty($flag_column)) {
-            //                     continue;
-            //                 }
-            //             }
-            //         }
-            //
-            //         if (is_object($value)) {
-            //             $this->modelLoop($html_block,$table_tbody_tr_element,$field,$value,'td');
-            //
-            //         } else {
-            //             if (array_key_exists('multiple',$data_schema[$field]->rule) && !empty($data_schema[$field]->rule['multiple'])) {
-            //                 foreach ($data_schema[$field]->rule['multiple'] as $multiple_dict) {
-            //                     if (array_key_exists((string) $value,$multiple_dict)) {
-            //                         $value = $multiple_dict[$value];
-            //
-            //                         break;
-            //                     }
-            //                 }
-            //             }
-            //
-            //             $table_tbody_tr_td_element = $html_block->createElement('td',$value);
-            //             $table_tbody_tr_element->appendChild($table_tbody_tr_td_element);
-            //         }
-            //     }
-            //
-            //     $table_tbody_tr_element = $this->addTableButton($table_tbody_tr_element,$data->$field_primary_key);
-            //
-            //     $node_table_tbody->appendChild($table_tbody_tr_element);
-            // }
         }
 
         private function addPanel() {
@@ -870,8 +739,8 @@ namespace Component\HtmlBlock {
             }
 
             $this->addButton();
-            // $this->addThead();
-            // $this->addSearch();
+            $this->addThead();
+            $this->addSearch();
             $this->addTbody();
             $this->addTfoot();
             $this->addPanel();
