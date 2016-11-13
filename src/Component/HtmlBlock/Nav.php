@@ -10,6 +10,7 @@ namespace Component\HtmlBlock {
         private $model;
         private $navbar_direction;
         private $title;
+        private $title_small;
         private $title_url;
         private $title_img;
         private $container_class;
@@ -30,6 +31,9 @@ namespace Component\HtmlBlock {
 
             $title = Util::get($kwargs,'title',null);
             $this->setTitle($title);
+
+            $title_small = Util::get($kwargs,'title_small',null);
+            $this->setTitleSmall($title_small);
 
             $title_url = Util::get($kwargs,'title_url',null);
             $this->setTitleUrl($title_url);
@@ -106,6 +110,14 @@ namespace Component\HtmlBlock {
             $this->title = $title;
         }
 
+        private function getTitleSmall() {
+            return $this->title_small;
+        }
+
+        private function setTitleSmall($title_small) {
+            $this->title_small = $title_small;
+        }
+
         private function getTitleUrl() {
             return $this->title_url;
         }
@@ -159,6 +171,7 @@ namespace Component\HtmlBlock {
             $model = $this->getModel();
             $navbar_direction = $this->getNavBarDirection();
             $title = $this->getTitle();
+            $title_small = $this->getTitleSmall();
             $title_url = $this->getTitleUrl();
             $title_img = $this->getTitleImg();
 
@@ -173,12 +186,29 @@ namespace Component\HtmlBlock {
                     $img_brand = $html_block->createElement('img');
                     $img_brand->setAttribute('src',$title_img);
                     $img_brand->setAttribute('alt',$title);
+                    $img_brand->setAttribute('style','float: left;margin-right: 5px;');
+                    $img_brand->setAttribute('width','20');
+                    $img_brand->setAttribute('height','20');
 
                     $a_brand = $html_block->createElement('a');
                     $a_brand->appendChild($img_brand);
 
+                    $a_brand->appendChild(new \DOMText($title));
+
+                    if (!empty($title_small)) {
+                        $title_small = $html_block->createElement('small',$title_small);
+
+                        $a_brand->appendChild($title_small);
+                    }
+
                 } else {
                     $a_brand = $html_block->createElement('a',$title);
+
+                    if (!empty($title_small)) {
+                        $title_small = $html_block->createElement('small',$title_small);
+
+                        $a_brand->appendChild($title_small);
+                    }
                 }
 
                 $a_brand->setAttribute('class','navbar-brand');
