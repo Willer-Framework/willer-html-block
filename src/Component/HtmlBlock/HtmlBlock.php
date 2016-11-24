@@ -155,6 +155,10 @@ namespace Component\HtmlBlock {
         }
 
         public function addCss($url,$media = 'all') {
+            if (empty($url)) {
+                return $this;
+            }
+
             $link_element = $this->createElement('link');
             $link_element->setAttribute('rel','stylesheet');
             $link_element->setAttribute('href',$url);
@@ -167,6 +171,10 @@ namespace Component\HtmlBlock {
         }
 
         public function addJs($url) {
+            if (empty($url)) {
+                return $this;
+            }
+
             $script_element = $this->createElement('script');
             $script_element->setAttribute('src',$url);
 
@@ -176,12 +184,22 @@ namespace Component\HtmlBlock {
             return $this;
         }
 
-        // public function addMetaTag($name,$content) {
-        //     $element = $this->document->createElement( 'meta' );
-        //     $element->setAttribute( 'name', $name );
-        //     $element->setAttribute( 'content', $content );
-        //     $this->metas[] = $element;
-        // }
+        public function addMeta($attribute_list) {
+            if (empty($attribute_list)) {
+                return $this;
+            }
+
+            $meta_element = $this->createElement('meta');
+
+            foreach ($attribute_list as $key => $value) {
+                $meta_element->setAttribute($key,$value);
+            }
+
+            $html_node_head = $this->getHtmlNodeHead();
+            $html_node_head->appendChild($meta_element);
+
+            return $this;
+        }
 
         public function createHtmlElement() {
             $dom_document = $this->getDomDocument();
