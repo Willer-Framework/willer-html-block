@@ -2,6 +2,7 @@
 
 namespace Component\HtmlBlock {
     use \DOMDocument as DOMDocument;
+    use \DOMElement as DOMElement;
     use Core\Exception\WException;
     use Core\Util;
 
@@ -241,8 +242,13 @@ namespace Component\HtmlBlock {
             $html_node_body_div_container_row = $this->getHtmlNodeBodyDivContainerRow();
 
             foreach ($component_list as $component) {
-                if (!empty($component) && !empty($component->getDomElement())) {
-                    $html_node_body_div_container_row->appendChild($component->getDomElement());
+                if (!empty($component)) {
+                    if ($component instanceof DOMElement) {
+                        $html_node_body_div_container_row->appendChild($component);
+
+                    } else if (!empty($component->getDomElement())) {
+                        $html_node_body_div_container_row->appendChild($component->getDomElement());
+                    }
                 }
             }
 

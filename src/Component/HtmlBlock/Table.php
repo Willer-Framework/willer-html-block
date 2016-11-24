@@ -10,6 +10,7 @@ namespace Component\HtmlBlock {
         private $model;
         private $column;
         private $button;
+        private $button_inline;
         private $button_extra;
         private $id;
         private $title;
@@ -38,6 +39,9 @@ namespace Component\HtmlBlock {
 
             $button = Util::get($kwargs,'button',null);
             $this->setButton($button);
+
+            $button_inline = Util::get($kwargs,'button_inline',null);
+            $this->setButtonInline($button_inline);
 
             $button_extra = Util::get($kwargs,'button_extra',null);
             $this->setButtonExtra($button_extra);
@@ -68,7 +72,7 @@ namespace Component\HtmlBlock {
                 $dom_element->setAttribute('class',$kwargs['class']);
 
             } else {
-                $dom_element->setAttribute('class','table table-striped table-bordered table-hover table-condensed');
+                $dom_element->setAttribute('class','table table-striped table-bordered table-hover table-condensed table-responsive');
             }
 
             if (isset($kwargs['style']) && !empty($kwargs['style'])) {
@@ -119,6 +123,14 @@ namespace Component\HtmlBlock {
 
         private function setButton($button) {
             $this->button = $button;
+        }
+
+        private function getButtonInline() {
+            return $this->button_inline;
+        }
+
+        private function setButtonInline($button_inline) {
+            $this->button_inline = $button_inline;
         }
 
         private function getButtonExtra() {
@@ -229,47 +241,44 @@ namespace Component\HtmlBlock {
                 return false;
             }
 
+            $request = new Request;
+
             if (!empty($button)) {
                 $div_button_group = $html_block->createElement('div');
                 $div_button_group->setAttribute('class','btn-group pull-left');
                 $div_button_group->setAttribute('role','group');
                 $div_button_group->setAttribute('aria-label','');
-            }
 
-            $request = new Request;
+                foreach ($button as $data) {
+                    $href = Util::get($data,'href',null);
 
-            if (!empty($button) && array_key_exists('add',$button)) {
-                $href = !empty($button['add']) ? $button['add'] : vsprintf('?%s-add=1',[$element_id]);
+                    $a_div_button_group = $html_block->createElement('a',Util::get($data,'label',null));
+                    $a_div_button_group->setAttribute('href',$href);
+                    $a_div_button_group->setAttribute('id',Util::get($data,'href',null));
+                    $a_div_button_group->setAttribute('role','button');
+                    $a_div_button_group->setAttribute('class',Util::get($data,'class','btn btn-default btn-xs'));
 
-                $a_div_button_group = $html_block->createElement('a');
-                $a_div_button_group->setAttribute('href',$href);
-                $a_div_button_group->setAttribute('id',vsprintf('%s-add',[$element_id]));
-                $a_div_button_group->setAttribute('role','button');
-                $a_div_button_group->setAttribute('class','btn btn-default btn-xs');
+                    $alt = Util::get($data,'alt',null);
 
-                $span_button_div_button_group = $html_block->createElement('span');
-                $span_button_div_button_group->setAttribute('class','glyphicon glyphicon-plus');
-                $span_button_div_button_group->setAttribute('aria-hidden','true');
+                    if (!empty($alt)) {
+                        $a_div_button_group->setAttribute('data-toggle','tooltip');
+                        $a_div_button_group->setAttribute('data-placement','top');
+                        $a_div_button_group->setAttribute('title',$alt);
+                        $a_div_button_group->setAttribute('alt',$alt);
+                    }
 
-                $a_div_button_group->appendChild($span_button_div_button_group);
-                $div_button_group->appendChild($a_div_button_group);
-            }
+                    $icon = Util::get($data,'icon',null);
 
-            if (!empty($button) && array_key_exists('refresh',$button)) {
-                $href = !empty($button['refresh']) ? $button['refresh'] : vsprintf('?%s-refresh=1',[$element_id]);
+                    if (!empty($icon)) {
+                        $span_button_div_button_group = $html_block->createElement('span');
+                        $span_button_div_button_group->setAttribute('class',$icon);
+                        $span_button_div_button_group->setAttribute('aria-hidden','true');
 
-                $a_div_button_group = $html_block->createElement('a');
-                $a_div_button_group->setAttribute('href',$href);
-                $a_div_button_group->setAttribute('id',vsprintf('%s-refresh',[$element_id]));
-                $a_div_button_group->setAttribute('role','button');
-                $a_div_button_group->setAttribute('class','btn btn-default btn-xs');
+                        $a_div_button_group->appendChild($span_button_div_button_group);
+                    }
 
-                $span_button_div_button_group = $html_block->createElement('span');
-                $span_button_div_button_group->setAttribute('class','glyphicon glyphicon-refresh');
-                $span_button_div_button_group->setAttribute('aria-hidden','true');
-
-                $a_div_button_group->appendChild($span_button_div_button_group);
-                $div_button_group->appendChild($a_div_button_group);
+                    $div_button_group->appendChild($a_div_button_group);
+                }
             }
 
             if (!empty($button_extra)) {
@@ -278,18 +287,32 @@ namespace Component\HtmlBlock {
                 $div_button_extra_group->setAttribute('role','group');
                 $div_button_extra_group->setAttribute('aria-label','');
 
-                foreach ($button_extra as $key_name => $data) {
+                foreach ($button_extra as $data) {
                     $a_div_button_extra_group = $html_block->createElement('a',Util::get($data,'label',null));
                     $a_div_button_extra_group->setAttribute('href',Util::get($data,'href',null));
                     $a_div_button_extra_group->setAttribute('id',Util::get($data,'id',null));
                     $a_div_button_extra_group->setAttribute('role','button');
-                    $a_div_button_extra_group->setAttribute('class','btn btn-default btn-xs');
+                    $a_div_button_extra_group->setAttribute('class',Util::get($data,'class','btn btn-default btn-xs'));
 
-                    $span_button_extra_div_button_group = $html_block->createElement('span');
-                    $span_button_extra_div_button_group->setAttribute('class',Util::get($data,'class_icon',null));
-                    $span_button_extra_div_button_group->setAttribute('aria-hidden','true');
+                    $alt = Util::get($data,'alt',null);
 
-                    $a_div_button_extra_group->appendChild($span_button_extra_div_button_group);
+                    if (!empty($alt)) {
+                        $a_div_button_extra_group->setAttribute('data-toggle','tooltip');
+                        $a_div_button_extra_group->setAttribute('data-placement','top');
+                        $a_div_button_extra_group->setAttribute('title',$alt);
+                        $a_div_button_extra_group->setAttribute('alt',$alt);
+                    }
+
+                    $icon = Util::get($data,'icon',null);
+
+                    if (!empty($icon)) {
+                        $span_button_extra_div_button_group = $html_block->createElement('span');
+                        $span_button_extra_div_button_group->setAttribute('class',$icon);
+                        $span_button_extra_div_button_group->setAttribute('aria-hidden','true');
+
+                        $a_div_button_extra_group->appendChild($span_button_extra_div_button_group);
+                    }
+
                     $div_button_extra_group->appendChild($a_div_button_extra_group);
                 }
             }
@@ -371,6 +394,10 @@ namespace Component\HtmlBlock {
             $column = $this->getColumn();
             $element_id = $this->getId();
 
+            if (empty($model['data'])) {
+                return false;
+            }
+
             $data = $model['data'][0];
 
             $table_thead_tr_element = $html_block->createElement('tr');
@@ -427,6 +454,10 @@ namespace Component\HtmlBlock {
             $node_table_thead = $dom_element->appendChild($table_thead_element);
             $this->setNodeTableThead($node_table_thead);
 
+            if (empty($model['data'])) {
+                return false;
+            }
+
             $data = $model['data'][0];
 
             $table_thead_tr_element = $html_block->createElement('tr');
@@ -459,9 +490,9 @@ namespace Component\HtmlBlock {
         private function addTableButton($table_tbody_tr_element,$id) {
             $html_block = $this->getHtmlBlock();
             $element_id = $this->getId();
-            $button = $this->getButton();
+            $button_inline = $this->getButtonInline();
 
-            if (empty($button)) {
+            if (empty($button_inline)) {
                 return false;
             }
 
@@ -473,37 +504,39 @@ namespace Component\HtmlBlock {
 
             $request = new Request;
 
-            if (array_key_exists('update',$button) && !empty($button['update'])) {
-                $href = $button['update']($id);
+            foreach ($button_inline as $data) {
+                $href = null;
 
-                $a_div_td_tr_tbody = $html_block->createElement('a');
+                if (array_key_exists('href',$data)) {
+                    $href = $data['href']($id);
+
+                }
+
+                $a_div_td_tr_tbody = $html_block->createElement('a',Util::get($data,'label',null));
                 $a_div_td_tr_tbody->setAttribute('href',$href);
-                $a_div_td_tr_tbody->setAttribute('id',vsprintf('%s-edit-%s',[$element_id,$id]));
+                $a_div_td_tr_tbody->setAttribute('id',Util::get($data,'id',null));
                 $a_div_td_tr_tbody->setAttribute('role','button');
-                $a_div_td_tr_tbody->setAttribute('class','btn btn-default');
+                $a_div_td_tr_tbody->setAttribute('class',Util::get($data,'class','btn btn-default'));
 
-                $span_button_div_td_tr_tbody = $html_block->createElement('span');
-                $span_button_div_td_tr_tbody->setAttribute('class','glyphicon glyphicon-edit');
-                $span_button_div_td_tr_tbody->setAttribute('aria-hidden','true');
+                $alt = Util::get($data,'alt',null);
 
-                $a_div_td_tr_tbody->appendChild($span_button_div_td_tr_tbody);
-                $div_td_tr_tbody->appendChild($a_div_td_tr_tbody);
-            }
+                if (!empty($alt)) {
+                    $a_div_td_tr_tbody->setAttribute('data-toggle','tooltip');
+                    $a_div_td_tr_tbody->setAttribute('data-placement','top');
+                    $a_div_td_tr_tbody->setAttribute('title',$alt);
+                    $a_div_td_tr_tbody->setAttribute('alt',$alt);
+                }
 
-            if (array_key_exists('delete',$button) && !empty($button['delete'])) {
-                $href = $button['delete']($id);
+                $icon = Util::get($data,'icon',null);
 
-                $a_div_td_tr_tbody = $html_block->createElement('a');
-                $a_div_td_tr_tbody->setAttribute('href',$href);
-                $a_div_td_tr_tbody->setAttribute('id',vsprintf('%s-remove-%s',[$element_id,$id]));
-                $a_div_td_tr_tbody->setAttribute('role','button');
-                $a_div_td_tr_tbody->setAttribute('class','btn btn-default');
+                if (!empty($icon)) {
+                    $span_button_div_td_tr_tbody = $html_block->createElement('span');
+                    $span_button_div_td_tr_tbody->setAttribute('class',$icon);
+                    $span_button_div_td_tr_tbody->setAttribute('aria-hidden','true');
 
-                $span_button_div_td_tr_tbody = $html_block->createElement('span');
-                $span_button_div_td_tr_tbody->setAttribute('class','glyphicon glyphicon-remove');
-                $span_button_div_td_tr_tbody->setAttribute('aria-hidden','true');
+                    $a_div_td_tr_tbody->appendChild($span_button_div_td_tr_tbody);    
+                }
 
-                $a_div_td_tr_tbody->appendChild($span_button_div_td_tr_tbody);
                 $div_td_tr_tbody->appendChild($a_div_td_tr_tbody);
             }
 
@@ -523,6 +556,10 @@ namespace Component\HtmlBlock {
             $table_tbody_element = $html_block->createElement('tbody');
             $node_table_tbody = $dom_element->appendChild($table_tbody_element);
             $this->setNodeTableTbody($node_table_tbody);
+
+            if (empty($model['data'])) {
+                return false;
+            }
 
             $field_primary_key = null;
             $model_data = $model['data'][0];
@@ -604,22 +641,6 @@ namespace Component\HtmlBlock {
             }
 
             $this->setDomElement($div_class_panel);
-        }
-
-        private function addContainer() {
-            $html_block = $this->getHtmlBlock();
-            $dom_element = $this->getDomElement();
-            $container_class = $this->getContainerClass();
-            $container_style = $this->getContainerStyle();
-
-            $div_class_col = $html_block->createElement('div');
-            $div_class_col->setAttribute('class',$container_class);
-            $div_class_col->setAttribute('style',$container_style);
-
-             $div_class_col->appendChild($dom_element);
-
-            $this->setNodeContainer($div_class_col);
-            $this->setDomElement($div_class_col);
         }
 
         private function addPagination() {
@@ -723,6 +744,22 @@ namespace Component\HtmlBlock {
             $table_tfoot_element = $html_block->createElement('tfoot');
             $node_table_tfoot = $dom_element->appendChild($table_tfoot_element);
             $this->setNodeTableTfoot($node_table_tfoot);
+        }
+
+        private function addContainer() {
+            $html_block = $this->getHtmlBlock();
+            $dom_element = $this->getDomElement();
+            $container_class = $this->getContainerClass();
+            $container_style = $this->getContainerStyle();
+
+            $div_class_col = $html_block->createElement('div');
+            $div_class_col->setAttribute('class',$container_class);
+            $div_class_col->setAttribute('style',$container_style);
+
+            $div_class_col->appendChild($dom_element);
+
+            $this->setNodeContainer($div_class_col);
+            $this->setDomElement($div_class_col);
         }
 
         private function ready() {

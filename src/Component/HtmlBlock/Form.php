@@ -666,40 +666,40 @@ namespace Component\HtmlBlock {
                 return $div;
             }
 
-            foreach ($button as $button_type => $button_attribute) {
-                if ($button_type == 'submit') {
-                    $title = $button_attribute['title'] ?? null;
-                    $icon = $button_attribute['icon'] ?? null;
-                    $class = $button_attribute['class'] ?? null;
-                    $style = $button_attribute['style'] ?? null;
+            foreach ($button as $button_attribute) {
+                $title = $button_attribute['title'] ?? null;
+                $icon = $button_attribute['icon'] ?? null;
+                $class = $button_attribute['class'] ?? null;
+                $style = $button_attribute['style'] ?? null;
+                $type = $button_attribute['type'] ?? 'submit';
+                $element = $button_attribute['element'] ?? 'button';
 
-                    $button = $html_block->createElement('button');
-                    $button->setAttribute('type','submit');
-                    $button->setAttribute('id',vsprintf('%s-field-button-save',[$element_id,]));
+                $button = $html_block->createElement($element);
+                $button->setAttribute('type',$type);
+                $button->setAttribute('id',vsprintf('%s-field-button-save',[$element_id,]));
 
-                    if (!empty($class)) {
-                        $button->setAttribute('class',$class);
+                if (!empty($class)) {
+                    $button->setAttribute('class',$class);
 
-                    } else {
-                        $button->setAttribute('class','btn btn-default');
-                    }
-
-                    if (!empty($style)) {
-                        $button->setAttribute('style',$style);
-
-                    }
-
-                    if (!empty($icon)) {
-                        $span = $html_block->createElement('span');
-                        $span->setAttribute('class',$icon);
-
-                        $button->appendChild($span);
-                    }
-
-                    $button->appendChild(new \DOMText($title));
-
-                    $div->appendChild($button);
+                } else {
+                    $button->setAttribute('class','btn btn-default');
                 }
+
+                if (!empty($style)) {
+                    $button->setAttribute('style',$style);
+
+                }
+
+                if (!empty($icon)) {
+                    $span = $html_block->createElement('span');
+                    $span->setAttribute('class',$icon);
+
+                    $button->appendChild($span);
+                }
+
+                $button->appendChild(new \DOMText($title));
+
+                $div->appendChild($button);
             }
 
             return $div;

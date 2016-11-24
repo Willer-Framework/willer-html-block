@@ -219,11 +219,39 @@ namespace Component\HtmlBlock {
 
             $div_container_fluid->appendChild($div_header);
 
+            $div_collapse_id = vsprintf('%s-navbar-collapse',[mt_rand()]);
+
             $div_collapse = $html_block->createElement('div');
             $div_collapse->setAttribute('class','navbar-collapse collapse');
-            $div_collapse->setAttribute('id',vsprintf('%s-navbar-collapse',[mt_rand()]));
+            $div_collapse->setAttribute('id',$div_collapse_id);
 
             if (!empty($model)) {
+                $button_navbar_toggle_collapsed = $html_block->createElement('button');
+                $button_navbar_toggle_collapsed->setAttribute('type','button');
+                $button_navbar_toggle_collapsed->setAttribute('class','navbar-toggle collapsed');
+                $button_navbar_toggle_collapsed->setAttribute('data-toggle','collapse');
+                $button_navbar_toggle_collapsed->setAttribute('data-target','#'.$div_collapse_id);
+                $button_navbar_toggle_collapsed->setAttribute('aria-expanded','false');
+
+                $span_sr_only = $html_block->createElement('span','Toggle navigation');
+                $span_sr_only->setAttribute('class','sr-only');
+
+                $span_icon_bar_1 = $html_block->createElement('span');
+                $span_icon_bar_1->setAttribute('class','icon-bar');
+
+                $span_icon_bar_2 = $html_block->createElement('span');
+                $span_icon_bar_2->setAttribute('class','icon-bar');
+
+                $span_icon_bar_3 = $html_block->createElement('span');
+                $span_icon_bar_3->setAttribute('class','icon-bar');
+
+                $button_navbar_toggle_collapsed->appendChild($span_sr_only);
+                $button_navbar_toggle_collapsed->appendChild($span_icon_bar_1);
+                $button_navbar_toggle_collapsed->appendChild($span_icon_bar_2);
+                $button_navbar_toggle_collapsed->appendChild($span_icon_bar_3);
+
+                $div_header->appendChild($button_navbar_toggle_collapsed);
+
                 $ul_navbar = $html_block->createElement('ul');
 
                 if (empty($navbar_direction)) {
