@@ -9,7 +9,9 @@ namespace Component\HtmlBlock {
         private $dom_element;
         private $model;
         private $column;
+        private $pagination;
         private $button;
+        private $button_search;
         private $button_inline;
         private $button_extra;
         private $id;
@@ -37,6 +39,9 @@ namespace Component\HtmlBlock {
             $column = Util::get($kwargs,'column',null);
             $this->setColumn($column);
 
+            $pagination = Util::get($kwargs,'pagination',null);
+            $this->setPagination($pagination);
+
             $button = Util::get($kwargs,'button',null);
             $this->setButton($button);
 
@@ -45,6 +50,9 @@ namespace Component\HtmlBlock {
 
             $button_extra = Util::get($kwargs,'button_extra',null);
             $this->setButtonExtra($button_extra);
+
+            $button_search = Util::get($kwargs,'button_search',null);
+            $this->setButtonSearch($button_search);
 
             $title = Util::get($kwargs,'title',null);
             $this->setTitle($title);
@@ -117,6 +125,14 @@ namespace Component\HtmlBlock {
             $this->column = $column;
         }
 
+        private function getPagination() {
+            return $this->pagination;
+        }
+
+        private function setPagination($pagination) {
+            $this->pagination = $pagination;
+        }
+
         private function getButton() {
             return $this->button;
         }
@@ -139,6 +155,14 @@ namespace Component\HtmlBlock {
 
         private function setButtonExtra($button_extra) {
             $this->button_extra = $button_extra;
+        }
+
+        private function getButtonSearch() {
+            return $this->button_search;
+        }
+
+        private function setButtonSearch($button_search) {
+            $this->button_search = $button_search;
         }
 
         private function getId() {
@@ -332,12 +356,36 @@ namespace Component\HtmlBlock {
             $dom_element->insertBefore($p_element);
         }
 
-        private function modelLoop($html_block,$table_tr_element,$object,$object_column,$type) {
+        private function addEmpty() {
+            $html_block = $this->getHtmlBlock();
+            $dom_element = $this->getDomElement();
+
+            $thead = $html_block->createElement('thead');
+            $tr = $html_block->createElement('tr');
+            $th = $html_block->createElement('th','Resultado da consulta de dados');
+            $tr->appendChild($th);
+            $thead->appendChild($tr);
+            
+            $tbody = $html_block->createElement('tbody');
+            $tr = $html_block->createElement('tr');
+            $td = $html_block->createElement('td','Nenhum registro encontrado! ');
+            $tr->appendChild($td);
+
+            $tbody->appendChild($tr);
+
+            $dom_element->appendChild($thead);
+            $dom_element->appendChild($tbody);
+        }
+
+        private function modelLoop($html_block,$table_tr_element,$object,$object_column,$type,$object_table_name_main = null) {
             $element_id = $this->getId();
             $column = $this->getColumn();
             $object_table_name = $object->getTableName();
             $object_schema = $object->schema();
             $flag_label = null;
+
+            $request = new Request;
+            $request_http_get = $request->getHttpGet();
 
             foreach ($object_column as $key => $column_value) {
                 if (is_array($column_value) && !empty($column_value)) {
@@ -359,7 +407,11 @@ namespace Component\HtmlBlock {
                         $table_tr_element->appendChild($table_tr_type_element);
 
                     } else if ($type == 'form') {
+                        $field_name = vsprintf('%s_%s__%s',[$object_table_name_main,$object_table_name,$column_value]);
+
                         $input = $html_block->createElement('input');
+                        $input->setAttribute('name',$field_name);
+                        $input->setAttribute('value',Util::get($request_http_get,$field_name,null));
                         $input->setAttribute('id',vsprintf('%s-search-%s-%s',[$element_id,$object_table_name,$column_value]));
                         $input->setAttribute('class','form-control input-sm table-search-input');
                         $input->setAttribute('type','text');
@@ -371,12 +423,8 @@ namespace Component\HtmlBlock {
 
                     } else if ($type == 'td') {
                         if (array_key_exists('multiple',$object_schema[$column_value]->rule) && !empty($object_schema[$column_value]->rule['multiple'])) {
-                            foreach ($object_schema[$column_value]->rule['multiple'] as $multiple_dict) {
-                                if (array_key_exists((string) $object->$column_value,$multiple_dict)) {
-                                    $object->$column_value = $multiple_dict[$object->$column_value];
-
-                                    break;
-                                }
+                            if (array_key_exists((string) $object->$column_value,$object_schema[$column_value]->rule['multiple'])) {
+                                $object->$column_value = $object_schema[$column_value]->rule['multiple'][$object->$column_value];
                             }
                         }
 
@@ -393,12 +441,19 @@ namespace Component\HtmlBlock {
             $node_table_thead = $this->getNodeTableThead();
             $column = $this->getColumn();
             $element_id = $this->getId();
+            $button_search = $this->getButtonSearch();
 
             if (empty($model['data'])) {
                 return false;
             }
 
+            $request = new Request;
+            $request_http_get = $request->getHttpGet();
+
             $data = $model['data'][0];
+
+            $table_thead_form = $html_block->createElement('form');
+            $table_thead_form->setAttribute('method','GET');
 
             $table_thead_tr_element = $html_block->createElement('tr');
 
@@ -407,41 +462,79 @@ namespace Component\HtmlBlock {
 
             foreach ($column as $key => $column_value) {
                 if (is_array($column_value) && !empty($column_value)) {
-                    $this->modelLoop($html_block,$table_thead_tr_element,$data->$key,$column_value,'form');
+                    $this->modelLoop($html_block,$table_thead_tr_element,$data->$key,$column_value,'form',$data_table_name);
 
                 } else {
                     if (!array_key_exists($column_value,$data)) {
                         continue;
                     }
 
-                    $input = $html_block->createElement('input');
-                    $input->setAttribute('id',vsprintf('%s-search-%s-%s',[$element_id,$data_table_name,$column_value]));
-                    $input->setAttribute('class','form-control input-sm table-search-input');
-                    $input->setAttribute('type','text');
-                    $input->setAttribute('placeholder','...');
+                    $field_name = vsprintf('%s__%s',[$data_table_name,$column_value]);
+
+                    if (array_key_exists('multiple',$data_schema[$column_value]->rule)) {
+                        $field = $html_block->createElement('select');
+                        $field->setAttribute('name',$field_name);
+                        $field->setAttribute('id',vsprintf('%s-search-%s-%s',[$element_id,$data_table_name,$column_value]));
+                        $field->setAttribute('class','form-control input-sm table-search-input');
+
+                        $field_name_value = Util::get($request_http_get,$field_name,null);
+
+                        if (!empty($data_schema[$column_value]->rule['multiple'])) {
+                            foreach ($data_schema[$column_value]->rule['multiple'] as $key => $value) {
+                                $option = $html_block->createElement('option',$value);
+                                $option->setAttribute('value',$key);
+
+                                if ((string) $key === $field_name_value) {
+                                    $option->setAttribute('selected','selected');
+                                }
+
+                                $field->appendChild($option);
+                            }
+                        }
+
+                    } else {
+                        $field = $html_block->createElement('input');
+                        $field->setAttribute('name',$field_name);
+                        $field->setAttribute('value',Util::get($request_http_get,$field_name,null));
+                        $field->setAttribute('id',vsprintf('%s-search-%s-%s',[$element_id,$data_table_name,$column_value]));
+                        $field->setAttribute('class','form-control input-sm table-search-input');
+                        $field->setAttribute('type','text');
+                        $field->setAttribute('placeholder','...');
+                    }
 
                     $table_thead_tr_th_element = $html_block->createElement('th','');
-                    $table_thead_tr_th_element->appendChild($input);
+                    $table_thead_tr_th_element->appendChild($field);
                     $table_thead_tr_element->appendChild($table_thead_tr_th_element);
                 }
             }
 
             $button = $html_block->createElement('button');
+            $button->setAttribute('name',Util::get($button_search,'name',null));
+            $button->setAttribute('alt',Util::get($button_search,'alt',null));
+            $button->setAttribute('title','Pesquisar');
+            $button->setAttribute('value','1');
             $button->setAttribute('id',vsprintf('%s-search-button',[$element_id,]));
             $button->setAttribute('class','btn btn-default btn-sm table-search-button');
             $button->setAttribute('type','submit');
 
             $span_button = $html_block->createElement('span');
-            $span_button->setAttribute('class','glyphicon glyphicon-search');
+            $span_button->setAttribute('class',Util::get($button_search,'icon','glyphicon glyphicon-search'));
             $span_button->setAttribute('aria-hidden','true');
 
             $button->appendChild($span_button);
 
+            $button_search_label = Util::get($button_search,'label',null);
+
+            if (!empty($button_search_label)) {
+                $button->appendChild(new \DOMText($button_search_label));
+            }
+
             $table_thead_tr_th_element = $html_block->createElement('th');
             $table_thead_tr_th_element->appendChild($button);
             $table_thead_tr_element->appendChild($table_thead_tr_th_element);
+            $table_thead_form->appendChild($table_thead_tr_element);
 
-            $node_table_thead->appendChild($table_thead_tr_element);
+            $node_table_thead->appendChild($table_thead_form);
         }
 
         private function addThead() {
@@ -646,6 +739,7 @@ namespace Component\HtmlBlock {
         private function addPagination() {
             $html_block = $this->getHtmlBlock();
             $model = $this->getModel();
+            $pagination = $this->getPagination();
 
             if (!empty($model) && is_array($model) && isset($model['page_total']) && !empty($model['data']) && $model['register_total'] > $model['register_perpage']) {
                 $node_panel_body = $this->getNodePanelBody();
@@ -659,10 +753,13 @@ namespace Component\HtmlBlock {
                 if ($model['page_previous'] > 1) {
                     $li_ul_nav_pagination = $html_block->createElement('li');
                     $a_li_ul_nav_pagination = $html_block->createElement('a');
-                    $a_li_ul_nav_pagination->setAttribute('href',vsprintf('?%s-pag-page=1',[$element_id,]));
+                    $a_li_ul_nav_pagination->setAttribute('href',vsprintf('?%s-page=1',[$element_id,]));
                     $a_li_ul_nav_pagination->setAttribute('class',vsprintf('%s-pag',[$element_id,]));
                     $a_li_ul_nav_pagination->setAttribute('data-page','1');
-                    $span_a_li_ul_nav_pagination = $html_block->createElement('span','«');
+                    $span_a_li_ul_nav_pagination = $html_block->createElement('span');
+                    $span_a_li_ul_nav_pagination->setAttribute('class','glyphicon glyphicon-chevron-left');
+                    $span_a_li_ul_nav_pagination->setAttribute('alt',Util::get($pagination,'left_alt',null));
+                    $span_a_li_ul_nav_pagination->setAttribute('title',Util::get($pagination,'left_alt',null));
                     $span_a_li_ul_nav_pagination->setAttribute('aria-hidden','true');
 
                     $a_li_ul_nav_pagination->appendChild($span_a_li_ul_nav_pagination);
@@ -674,7 +771,7 @@ namespace Component\HtmlBlock {
                 if ($model['page_previous'] < $model['page_current']) {
                     $li_ul_nav_pagination = $html_block->createElement('li');
                     $a_li_ul_nav_pagination = $html_block->createElement('a');
-                    $a_li_ul_nav_pagination->setAttribute('href',vsprintf('?%s-pag-page=%s',[$element_id,$model['page_previous']]));
+                    $a_li_ul_nav_pagination->setAttribute('href',vsprintf('?%s-page=%s',[$element_id,$model['page_previous']]));
                     $a_li_ul_nav_pagination->setAttribute('class',vsprintf('%s-pag',[$element_id,]));
                     $a_li_ul_nav_pagination->setAttribute('data-page',$model['page_previous']);
                     $span_a_li_ul_nav_pagination = $html_block->createElement('span',$model['page_previous']);
@@ -699,7 +796,7 @@ namespace Component\HtmlBlock {
                 if ($model['page_next'] < $model['page_total']) {
                     $li_ul_nav_pagination = $html_block->createElement('li');
                     $a_li_ul_nav_pagination = $html_block->createElement('a');
-                    $a_li_ul_nav_pagination->setAttribute('href',vsprintf('?%s-pag-page=%s',[$element_id,$model['page_next']]));
+                    $a_li_ul_nav_pagination->setAttribute('href',vsprintf('?%s-page=%s',[$element_id,$model['page_next']]));
                     $a_li_ul_nav_pagination->setAttribute('class',vsprintf('%s-pag',[$element_id,]));
                     $a_li_ul_nav_pagination->setAttribute('data-page',$model['page_next']);
                     $span_a_li_ul_nav_pagination = $html_block->createElement('span',$model['page_next']);
@@ -714,10 +811,13 @@ namespace Component\HtmlBlock {
                 if ($model['page_total'] > $model['page_current']) {
                     $li_ul_nav_pagination = $html_block->createElement('li');
                     $a_li_ul_nav_pagination = $html_block->createElement('a');
-                    $a_li_ul_nav_pagination->setAttribute('href',vsprintf('?%s-pag-page=%s',[$element_id,$model['page_total']]));
+                    $a_li_ul_nav_pagination->setAttribute('href',vsprintf('?%s-page=%s',[$element_id,$model['page_total']]));
                     $a_li_ul_nav_pagination->setAttribute('class',vsprintf('%s-pag',[$element_id,]));
                     $a_li_ul_nav_pagination->setAttribute('data-page',$model['page_total']);
-                    $span_a_li_ul_nav_pagination = $html_block->createElement('span','»');
+                    $span_a_li_ul_nav_pagination = $html_block->createElement('span');
+                    $span_a_li_ul_nav_pagination->setAttribute('class','glyphicon glyphicon-chevron-right');
+                    $span_a_li_ul_nav_pagination->setAttribute('alt',Util::get($pagination,'right_alt',null));
+                    $span_a_li_ul_nav_pagination->setAttribute('title',Util::get($pagination,'right_alt',null));
                     $span_a_li_ul_nav_pagination->setAttribute('aria-hidden','true');
 
                     $a_li_ul_nav_pagination->appendChild($span_a_li_ul_nav_pagination);
@@ -769,6 +869,7 @@ namespace Component\HtmlBlock {
 
             if (empty($model) || !is_array($model) || !isset($model['data']) || empty($model['data'])) {
                 $this->addButton();
+                $this->addEmpty();
                 $this->addPanel();
                 $this->addContainer();
 
