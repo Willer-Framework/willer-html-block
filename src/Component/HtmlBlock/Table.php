@@ -422,9 +422,9 @@ namespace Component\HtmlBlock {
                         $table_tr_element->appendChild($table_tr_type_element);
 
                     } else if ($type == 'td') {
-                        if (array_key_exists('multiple',$object_schema[$column_value]->rule) && !empty($object_schema[$column_value]->rule['multiple'])) {
-                            if (array_key_exists((string) $object->$column_value,$object_schema[$column_value]->rule['multiple'])) {
-                                $object->$column_value = $object_schema[$column_value]->rule['multiple'][$object->$column_value];
+                        if (array_key_exists('select',$object_schema[$column_value]->rule) && !empty($object_schema[$column_value]->rule['select'])) {
+                            if (array_key_exists((string) $object->$column_value,$object_schema[$column_value]->rule['select'])) {
+                                $object->$column_value = $object_schema[$column_value]->rule['select'][$object->$column_value];
                             }
                         }
 
@@ -471,16 +471,20 @@ namespace Component\HtmlBlock {
 
                     $field_name = vsprintf('%s__%s',[$data_table_name,$column_value]);
 
-                    if (array_key_exists('multiple',$data_schema[$column_value]->rule)) {
+                    if (array_key_exists('select',$data_schema[$column_value]->rule)) {
                         $field = $html_block->createElement('select');
                         $field->setAttribute('name',$field_name);
                         $field->setAttribute('id',vsprintf('%s-search-%s-%s',[$element_id,$data_table_name,$column_value]));
                         $field->setAttribute('class','form-control input-sm table-search-input');
 
+                        if (array_key_exists('multiple',$data_schema[$column_value]->rule) && !empty($data_schema[$column_value]->rule['multiple'])) {
+                            $field->setAttribute('multiple','multiple');
+                        }
+
                         $field_name_value = Util::get($request_http_get,$field_name,null);
 
-                        if (!empty($data_schema[$column_value]->rule['multiple'])) {
-                            foreach ($data_schema[$column_value]->rule['multiple'] as $key => $value) {
+                        if (!empty($data_schema[$column_value]->rule['select'])) {
+                            foreach ($data_schema[$column_value]->rule['select'] as $key => $value) {
                                 $option = $html_block->createElement('option',$value);
                                 $option->setAttribute('value',$key);
 
@@ -678,9 +682,9 @@ namespace Component\HtmlBlock {
                             continue;
                         }
 
-                        if (array_key_exists('multiple',$data_schema[$column_value]->rule) && !empty($data_schema[$column_value]->rule['multiple'])) {
-                            if (array_key_exists((string) $data->$column_value,$data_schema[$column_value]->rule['multiple'])) {
-                                $data->$column_value = $data_schema[$column_value]->rule['multiple'][$data->$column_value];
+                        if (array_key_exists('select',$data_schema[$column_value]->rule) && !empty($data_schema[$column_value]->rule['select'])) {
+                            if (array_key_exists((string) $data->$column_value,$data_schema[$column_value]->rule['select'])) {
+                                $data->$column_value = $data_schema[$column_value]->rule['select'][$data->$column_value];
                             }
                         }
 

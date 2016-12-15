@@ -335,18 +335,31 @@ namespace Component\HtmlBlock {
                 $label->setAttribute('class','col-sm-2 control-label');
             }
 
-            if (array_key_exists('multiple',$schema->rule) && !empty($schema->rule['multiple'])) {
+            if (array_key_exists('select',$schema->rule) && !empty($schema->rule['select'])) {
                 $select_or_input = $html_block->createElement('select');
                 $select_or_input->setAttribute('name',$field);
                 $select_or_input->setAttribute('class','form-control');
                 $select_or_input->setAttribute('id',vsprintf('%s-field-%s',[$element_id,$field]));
 
-                foreach ($schema->rule['multiple'] as $key => $value) {
+                if (array_key_exists('multiple',$schema->rule) && !empty($schema->rule['multiple'])) {
+                    $select_or_input->setAttribute('multiple','multiple');
+                    $select_or_input->removeAttribute('name');
+                    $select_or_input->setAttribute('name',vsprintf('%s[]',[$field,]));
+                }
+
+                foreach ($schema->rule['select'] as $key => $value) {
                     $option = $html_block->createElement('option',$value);
                     $option->setAttribute('value',$key);
 
-                    if (!empty($model->$field) && $model->$field == $key) {
-                        $option->setAttribute('selected','selected');
+                    if (array_key_exists('multiple',$schema->rule) && !empty($schema->rule['multiple'])) {
+                        if (!empty($model->$field) && in_array($key,$model->$field)) {
+                            $option->setAttribute('selected','selected');
+                        }
+
+                    } else {
+                        if (!empty($model->$field) && $model->$field == $key) {
+                            $option->setAttribute('selected','selected');
+                        }
                     }
 
                     $select_or_input->appendChild($option);
