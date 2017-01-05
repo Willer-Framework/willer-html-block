@@ -289,6 +289,9 @@ namespace Component\HtmlBlock {
                         $a_div_button_group->setAttribute('data-placement','top');
                         $a_div_button_group->setAttribute('title',$alt);
                         $a_div_button_group->setAttribute('alt',$alt);
+                        $a_div_button_group->setAttribute('data-toggle','tooltip');
+                        $a_div_button_group->setAttribute('data-placement','top');
+                        $a_div_button_group->setAttribute('data-container','body');
                     }
 
                     $icon = Util::get($data,'icon',null);
@@ -459,6 +462,10 @@ namespace Component\HtmlBlock {
 
             $data_schema = $data->schema();
             $data_table_name = $data->getTableName();
+            
+            if (empty($column)) {
+                $column = array_keys($data->getTableColumn());
+            }
 
             foreach ($column as $key => $column_value) {
                 if (is_array($column_value) && !empty($column_value)) {
@@ -476,6 +483,11 @@ namespace Component\HtmlBlock {
                         $field->setAttribute('name',$field_name);
                         $field->setAttribute('id',vsprintf('%s-search-%s-%s',[$element_id,$data_table_name,$column_value]));
                         $field->setAttribute('class','form-control input-sm table-search-input');
+
+                        $option = $html_block->createElement('option','...');
+                        $option->setAttribute('value','');
+
+                        $field->appendChild($option);
 
                         if (array_key_exists('multiple',$data_schema[$column_value]->rule) && !empty($data_schema[$column_value]->rule['multiple'])) {
                             $field->setAttribute('multiple','multiple');
@@ -559,6 +571,10 @@ namespace Component\HtmlBlock {
 
             $table_thead_tr_element = $html_block->createElement('tr');
             $data_schema = $data->schema();
+            
+            if (empty($column)) {
+                $column = array_keys($data->getTableColumn());
+            }
 
             foreach ($column as $key => $column_value) {
                 if (is_array($column_value) && !empty($column_value)) {
@@ -618,10 +634,11 @@ namespace Component\HtmlBlock {
                 $alt = Util::get($data,'alt',null);
 
                 if (!empty($alt)) {
-                    $a_div_td_tr_tbody->setAttribute('data-toggle','tooltip');
-                    $a_div_td_tr_tbody->setAttribute('data-placement','top');
                     $a_div_td_tr_tbody->setAttribute('title',$alt);
                     $a_div_td_tr_tbody->setAttribute('alt',$alt);
+                    $a_div_td_tr_tbody->setAttribute('data-toggle','tooltip');
+                    $a_div_td_tr_tbody->setAttribute('data-placement','top');
+                    $a_div_td_tr_tbody->setAttribute('data-container','body');
                 }
 
                 $icon = Util::get($data,'icon',null);
@@ -668,14 +685,26 @@ namespace Component\HtmlBlock {
                     break;
                 }
             }
+            
+            if (empty($column)) {
+                $column = array_keys($model_data->getTableColumn());
+            }
 
             foreach ($model['data'] as $data) {
                 $data_schema = $data->schema();
                 $table_tbody_tr_element = $html_block->createElement('tr');
 
                 foreach ($column as $key => $column_value) {
-                    if (is_array($column_value) && !empty($column_value)) {
-                        $this->modelLoop($html_block,$table_tbody_tr_element,$data->$key,$column_value,'td');
+                    if ((is_array($column_value) || (is_object($data->$column_value))) && !empty($column_value)) {
+                        if (!is_array($column_value) && is_object($data->$column_value)) {
+                            $data_key = $data->$column_value;
+                            $column_value = [$data->$column_value->getPrimaryKey()];
+
+                        } else {
+                            $data_key = $data->$key;
+                        }
+
+                        $this->modelLoop($html_block,$table_tbody_tr_element,$data_key,$column_value,'td');
 
                     } else {
                         if (!array_key_exists($column_value,$data)) {
