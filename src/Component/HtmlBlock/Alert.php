@@ -135,7 +135,7 @@ namespace Component\HtmlBlock {
                 $p = $html_block->createElement('p',$message);
 
                 if (!empty($type)) {
-                    $dom_element->setAttribute('class',vsprintf('alert %s alert-dismissible',[$type]));
+                    $dom_element->setAttribute('class',vsprintf('alert alert-%s alert-dismissible',[$type]));
                 }
 
                 $dom_element->appendChild($button);
