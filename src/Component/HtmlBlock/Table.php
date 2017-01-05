@@ -526,18 +526,39 @@ namespace Component\HtmlBlock {
 
             $button = $html_block->createElement('button');
             $button->setAttribute('name',Util::get($button_search,'name',null));
-            $button->setAttribute('alt',Util::get($button_search,'alt',null));
-            $button->setAttribute('title','Pesquisar');
+            
+            $button_search_alt = Util::get($button_search,'alt',null);
+
+            $button->setAttribute('alt',$button_search_alt);
+
+            if (!empty($button_search_alt)) {
+                $button->setAttribute('title',$button_search_alt);
+                $button->setAttribute('data-toggle','tooltip');
+                $button->setAttribute('data-placement','top');
+                $button->setAttribute('data-container','body');
+            }
+
             $button->setAttribute('value','1');
-            $button->setAttribute('id',vsprintf('%s-search-button',[$element_id,]));
-            $button->setAttribute('class','btn btn-default btn-sm table-search-button');
+            $button->setAttribute('id',Util::get($button_search,'id',null));
+
+            $button_search_class = Util::get($button_search,'class',null);
+
+            if (empty($button_search_class)) {
+                $button_search_class = 'btn btn-default btn-sm table-search-button';
+            }
+
+            $button->setAttribute('class',$button_search_class);
             $button->setAttribute('type','submit');
+            
+            $button_search_icon = Util::get($button_search,'icon',null);
+            
+            if (!empty($button_search_icon)) {
+                $span_button = $html_block->createElement('span');
+                $span_button->setAttribute('class',Util::get($button_search,'icon','glyphicon glyphicon-search'));
+                $span_button->setAttribute('aria-hidden','true');
 
-            $span_button = $html_block->createElement('span');
-            $span_button->setAttribute('class',Util::get($button_search,'icon','glyphicon glyphicon-search'));
-            $span_button->setAttribute('aria-hidden','true');
-
-            $button->appendChild($span_button);
+                $button->appendChild($span_button);
+            }
 
             $button_search_label = Util::get($button_search,'label',null);
 
