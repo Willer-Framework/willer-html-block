@@ -116,6 +116,50 @@ namespace Component\HtmlBlock {
 
             return $div_class_col;
         }
+        
+        private function addSubMenu($a_or_div_list_group_item,$model_sub) {
+            if (empty($model_sub)) {
+                return false;
+            }
+
+            $html_block = $this->getHtmlBlock();
+
+            $ul_list_group = $html_block->createElement('ul');
+            $ul_list_group->setAttribute('class','list-group');
+
+            foreach ($model_sub as $model_sub_data) {
+                $href = $model_sub_data['href'] ?? null;
+                $title = $model_sub_data['title'] ?? null;
+                $active = $model_sub_data['active'] ?? null;
+                $icon = $model_sub_data['icon'] ?? null;
+
+                $li_a_list_group = $html_block->createElement('a');
+                $li_a_list_group->setAttribute('href',$href);
+                
+                if (!empty($icon)) {
+                    $li_a_span_list_group = $html_block->createElement('span');
+                    $li_a_span_list_group->setAttribute('class',$icon);
+
+                    $li_a_list_group->appendChild($li_a_span_list_group);
+                }
+
+                // $li_a_list_group->appendChild(new \DOMText($title));
+
+                $li_list_group = $html_block->createElement('li');
+
+                if (!empty($active)) {
+                    $li_list_group->setAttribute('class','list-group-item active');
+
+                } else {
+                    $li_list_group->setAttribute('class','list-group-item');
+                }
+
+                $li_list_group->appendChild($li_a_list_group);
+                $ul_list_group->appendChild($li_list_group);
+            }
+
+            $a_or_div_list_group_item->appendChild($ul_list_group);
+        }
 
         private function ready() {
             $html_block = $this->getHtmlBlock();
@@ -132,15 +176,22 @@ namespace Component\HtmlBlock {
                 $content = $model_data['content'] ?? null;
                 $active = $model_data['active'] ?? null;
                 $icon = $model_data['icon'] ?? null;
+                $model_sub = $model_data['model'] ?? null;
 
-                $a_list_group_item = $html_block->createElement('a');
-                $a_list_group_item->setAttribute('href',$href);
+                if (!empty($model_sub)) {
+                    $a_or_div_list_group_item = $html_block->createElement('div');
+                } else {
+                    $a_or_div_list_group_item = $html_block->createElement('a');
+                }
+
+                $a_or_div_list_group_item = $html_block->createElement('a');
+                $a_or_div_list_group_item->setAttribute('href',$href);
 
                 if (!empty($active)) {
-                    $a_list_group_item->setAttribute('class','list-group-item active');
+                    $a_or_div_list_group_item->setAttribute('class','list-group-item active');
 
                 } else {
-                    $a_list_group_item->setAttribute('class','list-group-item');
+                    $a_or_div_list_group_item->setAttribute('class','list-group-item');
                 }
 
                 $a_h4_heading  = $html_block->createElement('h4');
@@ -155,13 +206,18 @@ namespace Component\HtmlBlock {
 
                 $a_h4_heading->appendChild(new \DOMText($title));
 
-                $a_p_heading  = $html_block->createElement('p',$content);
-                $a_p_heading->setAttribute('class','list-group-item-text');
+                $a_or_div_list_group_item->appendChild($a_h4_heading);
 
-                $a_list_group_item->appendChild($a_h4_heading);
-                $a_list_group_item->appendChild($a_p_heading);
+                if (!empty($content)) {
+                    $a_p_heading  = $html_block->createElement('p',$content);
+                    $a_p_heading->setAttribute('class','list-group-item-text');
 
-                $dom_element->appendChild($a_list_group_item);
+                    $a_or_div_list_group_item->appendChild($a_p_heading);
+                }
+                
+                $this->addSubMenu($a_or_div_list_group_item,$model_sub);
+
+                $dom_element->appendChild($a_or_div_list_group_item);
             }
 
             $add_container = $this->addContainer();
