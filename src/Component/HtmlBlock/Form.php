@@ -225,6 +225,11 @@ namespace Component\HtmlBlock {
             }
 
             $select = $html_block->createElement('select');
+
+            if (array_key_exists('multiple',$schema->rule) && !empty($schema->rule['multiple'])) {
+                $select->setAttribute('multiple','multiple');
+            }
+
             $select->setAttribute('name',$field);
             $select->setAttribute('class','form-control');
             $select->setAttribute('id',vsprintf('%s-field-%s',[$element_id,$field]));
@@ -274,7 +279,7 @@ namespace Component\HtmlBlock {
                 ->execute([
                     'join' => 'left']);
 
-            $data_list = $data_list['data'];
+            $data_list = $data_list->data;
 
             if (!empty($data_list)) {
                 foreach ($data_list as $data) {
@@ -335,7 +340,7 @@ namespace Component\HtmlBlock {
                 $label->setAttribute('class','col-sm-2 control-label');
             }
 
-            if (array_key_exists('select',$schema->rule) && !empty($schema->rule['select'])) {
+            if (array_key_exists('option',$schema->rule) && !empty($schema->rule['option'])) {
                 $select_or_input = $html_block->createElement('select');
                 $select_or_input->setAttribute('name',$field);
                 $select_or_input->setAttribute('class','form-control');
@@ -347,17 +352,17 @@ namespace Component\HtmlBlock {
                     $select_or_input->setAttribute('name',vsprintf('%s[]',[$field,]));
                 }
 
-                foreach ($schema->rule['select'] as $key => $value) {
+                foreach ($schema->rule['option'] as $key => $value) {
                     $option = $html_block->createElement('option',$value);
                     $option->setAttribute('value',$key);
 
                     if (array_key_exists('multiple',$schema->rule) && !empty($schema->rule['multiple'])) {
-                        if (!empty($model->$field) && in_array($key,$model->$field)) {
+                        if (!is_null($model->$field) && in_array($key,$model->$field)) {
                             $option->setAttribute('selected','selected');
                         }
 
                     } else {
-                        if (!empty($model->$field) && $model->$field == $key) {
+                        if (!is_null($model->$field) && $model->$field == $key) {
                             $option->setAttribute('selected','selected');
                         }
                     }
@@ -680,16 +685,25 @@ namespace Component\HtmlBlock {
             }
 
             foreach ($button as $button_attribute) {
+                if (empty($button_attribute)) {
+                    continue;
+                }
+
                 $title = $button_attribute['title'] ?? null;
                 $icon = $button_attribute['icon'] ?? null;
                 $class = $button_attribute['class'] ?? null;
                 $style = $button_attribute['style'] ?? null;
                 $type = $button_attribute['type'] ?? 'submit';
                 $element = $button_attribute['element'] ?? 'button';
+                $href = $button_attribute['href'] ?? null;
 
                 $button = $html_block->createElement($element);
                 $button->setAttribute('type',$type);
                 $button->setAttribute('id',vsprintf('%s-field-button-save',[$element_id,]));
+
+                if (!empty($href)) {
+                    $button->setAttribute('href',$href);
+                }
 
                 if (!empty($class)) {
                     $button->setAttribute('class',$class);
@@ -850,6 +864,9 @@ namespace Component\HtmlBlock {
             }
 
             if (!empty($type) && $type == 'horizontal') {
+                $div_row_type_horizontal = $html_block->createElement('div');
+                $div_row_type_horizontal->setAttribute('class','row');
+
                 $div_space_type_horizontal = $html_block->createElement('div');
                 $div_space_type_horizontal->setAttribute('class','col-sm-2');
 
@@ -859,8 +876,10 @@ namespace Component\HtmlBlock {
                 $div_button = $this->addButton();
                 $div_type_horizontal->appendChild($div_button);
 
-                $dom_element->appendChild($div_space_type_horizontal);
-                $dom_element->appendChild($div_type_horizontal);
+                $div_row_type_horizontal->appendChild($div_space_type_horizontal);
+                $div_row_type_horizontal->appendChild($div_type_horizontal);
+
+                $dom_element->appendChild($div_row_type_horizontal);
 
             } else {
                 $div_button = $this->addButton();

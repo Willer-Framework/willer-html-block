@@ -425,9 +425,9 @@ namespace Component\HtmlBlock {
                         $table_tr_element->appendChild($table_tr_type_element);
 
                     } else if ($type == 'td') {
-                        if (array_key_exists('select',$object_schema[$column_value]->rule) && !empty($object_schema[$column_value]->rule['select'])) {
-                            if (array_key_exists((string) $object->$column_value,$object_schema[$column_value]->rule['select'])) {
-                                $object->$column_value = $object_schema[$column_value]->rule['select'][$object->$column_value];
+                        if (array_key_exists('option',$object_schema[$column_value]->rule) && !empty($object_schema[$column_value]->rule['option'])) {
+                            if (array_key_exists((string) $object->$column_value,$object_schema[$column_value]->rule['option'])) {
+                                $object->$column_value = $object_schema[$column_value]->rule['option'][$object->$column_value];
                             }
                         }
 
@@ -446,14 +446,14 @@ namespace Component\HtmlBlock {
             $element_id = $this->getId();
             $button_search = $this->getButtonSearch();
 
-            if (empty($model['data'])) {
+            if (empty($model->data)) {
                 return false;
             }
 
             $request = new Request;
             $request_http_get = $request->getHttpGet();
 
-            $data = $model['data'][0];
+            $data = $model->data[0];
 
             $table_thead_form = $html_block->createElement('form');
             $table_thead_form->setAttribute('method','GET');
@@ -478,7 +478,29 @@ namespace Component\HtmlBlock {
 
                     $field_name = vsprintf('%s__%s',[$data_table_name,$column_value]);
 
-                    if (array_key_exists('select',$data_schema[$column_value]->rule)) {
+                    if (in_array($data_schema[$column_value]->method,['boolean',])) {
+                        $field = $html_block->createElement('div');
+                        $field->setAttribute('class','checkbox table-search-input');
+
+                        $field_label = $html_block->createElement('label');
+                        $field_label->setAttribute('style','text-align:center;display:block');
+
+                        $field_input = $html_block->createElement('input');
+                        $field_input->setAttribute('type','checkbox');
+                        $field_input->setAttribute('name',$field_name);
+                        $field_input->setAttribute('id',vsprintf('%s-search-%s-%s',[$element_id,$data_table_name,$column_value]));
+                        $field_input->setAttribute('value','1');
+
+                        $field_input_name_value = Util::get($request_http_get,$field_name,null);
+
+                        if (!empty($field_input_name_value)) {
+                            $field_input->setAttribute('checked','checked');
+                        }
+
+                        $field_label->appendChild($field_input);
+                        $field->appendChild($field_label);
+
+                    } else if (in_array($data_schema[$column_value]->method,['char',]) && array_key_exists('option',$data_schema[$column_value]->rule)) {
                         $field = $html_block->createElement('select');
                         $field->setAttribute('name',$field_name);
                         $field->setAttribute('id',vsprintf('%s-search-%s-%s',[$element_id,$data_table_name,$column_value]));
@@ -495,8 +517,8 @@ namespace Component\HtmlBlock {
 
                         $field_name_value = Util::get($request_http_get,$field_name,null);
 
-                        if (!empty($data_schema[$column_value]->rule['select'])) {
-                            foreach ($data_schema[$column_value]->rule['select'] as $key => $value) {
+                        if (!empty($data_schema[$column_value]->rule['option'])) {
+                            foreach ($data_schema[$column_value]->rule['option'] as $key => $value) {
                                 $option = $html_block->createElement('option',$value);
                                 $option->setAttribute('value',$key);
 
@@ -584,11 +606,11 @@ namespace Component\HtmlBlock {
             $node_table_thead = $dom_element->appendChild($table_thead_element);
             $this->setNodeTableThead($node_table_thead);
 
-            if (empty($model['data'])) {
+            if (empty($model->data)) {
                 return false;
             }
 
-            $data = $model['data'][0];
+            $data = $model->data[0];
 
             $table_thead_tr_element = $html_block->createElement('tr');
             $data_schema = $data->schema();
@@ -692,12 +714,12 @@ namespace Component\HtmlBlock {
             $node_table_tbody = $dom_element->appendChild($table_tbody_element);
             $this->setNodeTableTbody($node_table_tbody);
 
-            if (empty($model['data'])) {
+            if (empty($model->data)) {
                 return false;
             }
 
             $field_primary_key = null;
-            $model_data = $model['data'][0];
+            $model_data = $model->data[0];
 
             foreach ($model_data->schema() as $field => $schema) {
                 if ($schema->method == 'primaryKey') {
@@ -711,7 +733,7 @@ namespace Component\HtmlBlock {
                 $column = array_keys($model_data->getTableColumn());
             }
 
-            foreach ($model['data'] as $data) {
+            foreach ($model->data as $data) {
                 $data_schema = $data->schema();
                 $table_tbody_tr_element = $html_block->createElement('tr');
 
@@ -732,9 +754,9 @@ namespace Component\HtmlBlock {
                             continue;
                         }
 
-                        if (array_key_exists('select',$data_schema[$column_value]->rule) && !empty($data_schema[$column_value]->rule['select'])) {
-                            if (array_key_exists((string) $data->$column_value,$data_schema[$column_value]->rule['select'])) {
-                                $data->$column_value = $data_schema[$column_value]->rule['select'][$data->$column_value];
+                        if (array_key_exists('option',$data_schema[$column_value]->rule) && !empty($data_schema[$column_value]->rule['option'])) {
+                            if (array_key_exists((string) $data->$column_value,$data_schema[$column_value]->rule['option'])) {
+                                $data->$column_value = $data_schema[$column_value]->rule['option'][$data->$column_value];
                             }
                         }
 
@@ -795,7 +817,7 @@ namespace Component\HtmlBlock {
             $model = $this->getModel();
             $pagination = $this->getPagination();
 
-            if (!empty($model) && is_array($model) && isset($model['page_total']) && !empty($model['data']) && $model['register_total'] > $model['register_perpage']) {
+            if (!empty($model) && is_array($model) && isset($model->page_total) && !empty($model->data) && $model->register_total > $model->register_perpage) {
                 $node_panel_body = $this->getNodePanelBody();
                 $node_container = $this->getNodeContainer();
                 $element_id = $this->getId();
@@ -804,7 +826,7 @@ namespace Component\HtmlBlock {
                 $ul_nav_pagination = $html_block->createElement('ul');
                 $ul_nav_pagination->setAttribute('class','pagination');
 
-                if ($model['page_previous'] > 1) {
+                if ($model->page_previous > 1) {
                     $li_ul_nav_pagination = $html_block->createElement('li');
                     $a_li_ul_nav_pagination = $html_block->createElement('a');
                     $a_li_ul_nav_pagination->setAttribute('href',vsprintf('?%s-page=1',[$element_id,]));
@@ -822,13 +844,13 @@ namespace Component\HtmlBlock {
                     $ul_nav_pagination->appendChild($li_ul_nav_pagination);
                 }
 
-                if ($model['page_previous'] < $model['page_current']) {
+                if ($model->page_previous < $model->page_current) {
                     $li_ul_nav_pagination = $html_block->createElement('li');
                     $a_li_ul_nav_pagination = $html_block->createElement('a');
-                    $a_li_ul_nav_pagination->setAttribute('href',vsprintf('?%s-page=%s',[$element_id,$model['page_previous']]));
+                    $a_li_ul_nav_pagination->setAttribute('href',vsprintf('?%s-page=%s',[$element_id,$model->page_previous]));
                     $a_li_ul_nav_pagination->setAttribute('class',vsprintf('%s-pag',[$element_id,]));
-                    $a_li_ul_nav_pagination->setAttribute('data-page',$model['page_previous']);
-                    $span_a_li_ul_nav_pagination = $html_block->createElement('span',$model['page_previous']);
+                    $a_li_ul_nav_pagination->setAttribute('data-page',$model->page_previous);
+                    $span_a_li_ul_nav_pagination = $html_block->createElement('span',$model->page_previous);
                     $span_a_li_ul_nav_pagination->setAttribute('aria-hidden','true');
 
                     $a_li_ul_nav_pagination->appendChild($span_a_li_ul_nav_pagination);
@@ -839,21 +861,21 @@ namespace Component\HtmlBlock {
 
                 $li_ul_nav_pagination = $html_block->createElement('li');
                 $li_ul_nav_pagination->setAttribute('class','active');
-                $a_li_ul_nav_pagination = $html_block->createElement('a',$model['page_current']);
+                $a_li_ul_nav_pagination = $html_block->createElement('a',$model->page_current);
                 $a_li_ul_nav_pagination->setAttribute('class',vsprintf('%s-pag',[$element_id,]));
-                $a_li_ul_nav_pagination->setAttribute('data-page',$model['page_current']);
+                $a_li_ul_nav_pagination->setAttribute('data-page',$model->page_current);
 
                 $li_ul_nav_pagination->appendChild($a_li_ul_nav_pagination);
 
                 $ul_nav_pagination->appendChild($li_ul_nav_pagination);
 
-                if ($model['page_next'] < $model['page_total']) {
+                if ($model->page_next < $model->page_total) {
                     $li_ul_nav_pagination = $html_block->createElement('li');
                     $a_li_ul_nav_pagination = $html_block->createElement('a');
-                    $a_li_ul_nav_pagination->setAttribute('href',vsprintf('?%s-page=%s',[$element_id,$model['page_next']]));
+                    $a_li_ul_nav_pagination->setAttribute('href',vsprintf('?%s-page=%s',[$element_id,$model->page_next]));
                     $a_li_ul_nav_pagination->setAttribute('class',vsprintf('%s-pag',[$element_id,]));
-                    $a_li_ul_nav_pagination->setAttribute('data-page',$model['page_next']);
-                    $span_a_li_ul_nav_pagination = $html_block->createElement('span',$model['page_next']);
+                    $a_li_ul_nav_pagination->setAttribute('data-page',$model->page_next);
+                    $span_a_li_ul_nav_pagination = $html_block->createElement('span',$model->page_next);
                     $span_a_li_ul_nav_pagination->setAttribute('aria-hidden','true');
 
                     $a_li_ul_nav_pagination->appendChild($span_a_li_ul_nav_pagination);
@@ -862,12 +884,12 @@ namespace Component\HtmlBlock {
                     $ul_nav_pagination->appendChild($li_ul_nav_pagination);
                 }
 
-                if ($model['page_total'] > $model['page_current']) {
+                if ($model->page_total > $model->page_current) {
                     $li_ul_nav_pagination = $html_block->createElement('li');
                     $a_li_ul_nav_pagination = $html_block->createElement('a');
-                    $a_li_ul_nav_pagination->setAttribute('href',vsprintf('?%s-page=%s',[$element_id,$model['page_total']]));
+                    $a_li_ul_nav_pagination->setAttribute('href',vsprintf('?%s-page=%s',[$element_id,$model->page_total]));
                     $a_li_ul_nav_pagination->setAttribute('class',vsprintf('%s-pag',[$element_id,]));
-                    $a_li_ul_nav_pagination->setAttribute('data-page',$model['page_total']);
+                    $a_li_ul_nav_pagination->setAttribute('data-page',$model->page_total);
                     $span_a_li_ul_nav_pagination = $html_block->createElement('span');
                     $span_a_li_ul_nav_pagination->setAttribute('class','glyphicon glyphicon-chevron-right');
                     $span_a_li_ul_nav_pagination->setAttribute('alt',Util::get($pagination,'right_alt',null));
@@ -921,7 +943,7 @@ namespace Component\HtmlBlock {
             $dom_element = $this->getDomElement();
             $model = $this->getModel();
 
-            if (empty($model) || !is_array($model) || !isset($model['data']) || empty($model['data'])) {
+            if (empty($model) || !is_object($model) || !isset($model->data) || empty($model->data)) {
                 $this->addButton();
                 $this->addEmpty();
                 $this->addPanel();
