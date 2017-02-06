@@ -287,10 +287,7 @@ namespace Component\HtmlBlock {
                     $option->setAttribute('value',$data->$class_field_primarykey);
 
                     if (!empty($model->$field)) {
-                        if ($model->$class_field_primarykey == $data->$class_field_primarykey) {
-                            $option->setAttribute('selected','selected');
-
-                        } else if ($model->$field == $data->$class_field_primarykey) {
+                        if ($model->$field->$class_field_primarykey == $data->$class_field_primarykey) {
                             $option->setAttribute('selected','selected');
                         }
                     }
