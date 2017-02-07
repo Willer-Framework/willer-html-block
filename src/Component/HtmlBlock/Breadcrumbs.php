@@ -4,7 +4,7 @@ namespace Component\HtmlBlock {
     use Core\Exception\WException;
     use Core\Util;
 
-    class Alert {
+    class Breadcrumbs {
         private $html_block;
         private $dom_element;
         private $model;
@@ -23,12 +23,11 @@ namespace Component\HtmlBlock {
 
             $container_class = Util::get($kwargs,'container_class',null);
             $this->setContainerClass($container_class);
- 
+
             $container_style = Util::get($kwargs,'container_style',null);
             $this->setContainerStyle($container_style);
 
-            $dom_element = $html_block->createElement('div');
-            $dom_element->setAttribute('role','alert');
+            $dom_element = $html_block->createElement('ol');
 
             if (isset($kwargs['id']) && !empty($kwargs['id'])) {
                 $dom_element->setAttribute('id',$kwargs['id']);
@@ -38,7 +37,7 @@ namespace Component\HtmlBlock {
                 $dom_element->setAttribute('class',$kwargs['class']);
 
             } else {
-                $dom_element->setAttribute('class','alert alert-info alert-dismissible');
+                $dom_element->setAttribute('class','breadcrumb');
             }
 
             if (isset($kwargs['style']) && !empty($kwargs['style'])) {
@@ -59,14 +58,6 @@ namespace Component\HtmlBlock {
             $this->html_block = $html_block;
         }
 
-        public function getDomElement() {
-            return $this->dom_element;
-        }
-
-        private function setDomElement($dom_element) {
-            $this->dom_element = $dom_element;
-        }
-
         private function getModel() {
             return $this->model;
         }
@@ -75,18 +66,26 @@ namespace Component\HtmlBlock {
             $this->model = $model;
         }
 
+        public function getDomElement() {
+            return $this->dom_element;
+        }
+
+        private function setDomElement($dom_element) {
+            $this->dom_element = $dom_element;
+        }
+
         private function getContainerClass() {
             return $this->container_class;
         }
- 
+
         private function setContainerClass($container_class) {
             $this->container_class = $container_class;
         }
- 
+
         private function getContainerStyle() {
             return $this->container_style;
         }
- 
+
         private function setContainerStyle($container_style) {
             $this->container_style = $container_style;
         }
@@ -96,14 +95,14 @@ namespace Component\HtmlBlock {
             $dom_element = $this->getDomElement();
             $container_class = $this->getContainerClass();
             $container_style = $this->getContainerStyle();
- 
+
             $div_class_col = $html_block->createElement('div');
             $div_class_col->setAttribute('class',$container_class);
             $div_class_col->setAttribute('style',$container_style);
- 
+
             $div_class_col->appendChild($dom_element);
- 
-            $this->setDomElement($div_class_col);
+
+            return $div_class_col;
         }
 
         private function ready() {
@@ -111,44 +110,38 @@ namespace Component\HtmlBlock {
             $dom_element = $this->getDomElement();
             $model = $this->getModel();
 
-            if (empty($model) || !is_array($model)) {
-                $this->setDomElement(null);
-
+            if (empty($model)) {
                 return false;
             }
 
-            foreach ($model as $model_item) {
-                $message = Util::get($model_item,'message','');
-                $type = Util::get($model_item,'type',null);
+            foreach ($model as $model_data) {
+                $href = $model_data['href'] ?? null;
+                $title = $model_data['title'] ?? null;
+                $active = $model_data['active'] ?? null;
 
-                $button = $html_block->createElement('button');
-                $button->setAttribute('type','button');
-                $button->setAttribute('class','close');
-                $button->setAttribute('data-dismiss','alert');
-                $button->setAttribute('aria-label','Close');
+                if (!empty($active)) {
+                    $li_breadcrumbs = $html_block->createElement('li',$title);
+                    $li_breadcrumbs->setAttribute('class','active');                    
+                } else {
+                    $li_a_heading = $html_block->createElement('a',$title);
+                    $li_a_heading->setAttribute('href',$href);
 
-                // $span = $html_block->createElement('span','&times;');
-                // $span->setAttribute('aria-hidden','true');
+                    $li_breadcrumbs = $html_block->createElement('li');
+                    $li_breadcrumbs->appendChild($li_a_heading);
 
-                // $button->appendChild($span);
-
-                $p = $html_block->createElement('p',$message);
-
-                if (!empty($type)) {
-                    $dom_element->setAttribute('class',vsprintf('alert alert-%s alert-dismissible',[$type]));
                 }
 
-                $dom_element->appendChild($button);
-                $dom_element->appendChild($p);
+                $dom_element->appendChild($li_breadcrumbs);
             }
 
-            $this->addContainer();
+            $add_container = $this->addContainer();
+            $this->setDomElement($add_container);
         }
 
         public function renderHtml() {
             $html_block = $this->getHtmlBlock();
 
-            $html_block->appendBodyContainerRow($this);
+            $html_block->appendBody($this);
 
             return $html_block->renderHtml();
         }

@@ -2,6 +2,7 @@
 
 namespace Component\HtmlBlock {
     use \DOMDocument as DOMDocument;
+    use \DOMElement as DOMElement;
     use Core\Exception\WException;
     use Core\Util;
 
@@ -27,6 +28,9 @@ namespace Component\HtmlBlock {
             $doc_type = Util::get($kwargs,'doc_type','<!DOCTYPE html>');
             $this->setDocType($doc_type);
 
+            $col_md_default = Util::get($kwargs,'col_md_default',null);
+            $this->setColMdDefault($col_md_default);
+
             $dom_document = new DOMDocument(null,$encoding);
 
             $this->setDomDocument($dom_document);
@@ -49,14 +53,6 @@ namespace Component\HtmlBlock {
             return $this;
         }
 
-        public function getColMdDefault() {
-            return $this->col_md_default;
-        }
-
-        public function setColMdDefault($col_md_default) {
-            $this->col_md_default = $col_md_default;
-        }
-
         public function getDomDocument() {
             return $this->dom_document;
         }
@@ -65,6 +61,14 @@ namespace Component\HtmlBlock {
             $this->dom_document = $dom_document;
 
             return $this;
+        }
+
+        public function getColMdDefault() {
+            return $this->col_md_default;
+        }
+
+        public function setColMdDefault($col_md_default) {
+            $this->col_md_default = $col_md_default;
         }
 
         public function getHtmlNodeDocument() {
@@ -151,6 +155,10 @@ namespace Component\HtmlBlock {
         }
 
         public function addCss($url,$media = 'all') {
+            if (empty($url)) {
+                return $this;
+            }
+
             $link_element = $this->createElement('link');
             $link_element->setAttribute('rel','stylesheet');
             $link_element->setAttribute('href',$url);
@@ -163,6 +171,10 @@ namespace Component\HtmlBlock {
         }
 
         public function addJs($url) {
+            if (empty($url)) {
+                return $this;
+            }
+
             $script_element = $this->createElement('script');
             $script_element->setAttribute('src',$url);
 
@@ -172,12 +184,22 @@ namespace Component\HtmlBlock {
             return $this;
         }
 
-        // public function addMetaTag($name,$content) {
-        //     $element = $this->document->createElement( 'meta' );
-        //     $element->setAttribute( 'name', $name );
-        //     $element->setAttribute( 'content', $content );
-        //     $this->metas[] = $element;
-        // }
+        public function addMeta($attribute_list) {
+            if (empty($attribute_list)) {
+                return $this;
+            }
+
+            $meta_element = $this->createElement('meta');
+
+            foreach ($attribute_list as $key => $value) {
+                $meta_element->setAttribute($key,$value);
+            }
+
+            $html_node_head = $this->getHtmlNodeHead();
+            $html_node_head->appendChild($meta_element);
+
+            return $this;
+        }
 
         public function createHtmlElement() {
             $dom_document = $this->getDomDocument();
@@ -230,14 +252,7 @@ namespace Component\HtmlBlock {
             return $this;
         }
 
-        public function appendBodyRow($class = null,$component_list) {
-            if (empty($class)) {
-                $class = $this->getColMdDefault();
-            }
- 
-            $div_element = $this->createElement('div');
-            $div_element->setAttribute('class',$class);
-
+        public function appendBodyRow($component_list) {
             if (!is_array($component_list)) {
                 throw new WException(vsprintf('Expected array, given %s',[gettype($component_list)]));
             }
@@ -245,12 +260,15 @@ namespace Component\HtmlBlock {
             $html_node_body_div_container_row = $this->getHtmlNodeBodyDivContainerRow();
 
             foreach ($component_list as $component) {
-                if (!empty($component->getDomElement())) {
-                    $div_element->appendChild($component->getDomElement());
+                if (!empty($component)) {
+                    if ($component instanceof DOMElement) {
+                        $html_node_body_div_container_row->appendChild($component);
+
+                    } else if (!empty($component->getDomElement())) {
+                        $html_node_body_div_container_row->appendChild($component->getDomElement());
+                    }
                 }
             }
-
-            $html_node_body_div_container_row->appendChild($div_element);
 
             return $this;
         }

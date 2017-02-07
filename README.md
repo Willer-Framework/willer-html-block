@@ -10,7 +10,7 @@ http://williamborba.github.io/willer
 
 #### Composer
 
-`composer require wborba/willer-htmlBlock`
+`composer require wborba/willer-html-block`
 
 #### GitHub
 
