@@ -16,7 +16,9 @@ namespace Component\HtmlBlock {
         private $button_extra;
         private $id;
         private $title;
+        private $title_empty;
         private $text;
+        private $text_empty;
         private $footer;
         private $container_class;
         private $container_style;
@@ -57,8 +59,14 @@ namespace Component\HtmlBlock {
             $title = Util::get($kwargs,'title',null);
             $this->setTitle($title);
 
+            $title_empty = Util::get($kwargs,'title_empty',null);
+            $this->setTitleEmpty($title_empty);
+
             $text = Util::get($kwargs,'text',null);
             $this->setText($text);
+
+            $text_empty = Util::get($kwargs,'text_empty',null);
+            $this->setTextEmpty($text_empty);
 
             $footer = Util::get($kwargs,'footer',null);
             $this->setFooter($footer);
@@ -181,12 +189,28 @@ namespace Component\HtmlBlock {
             $this->title = $title;
         }
 
+        private function getTitleEmpty() {
+            return $this->title_empty;
+        }
+
+        private function setTitleEmpty($title_empty) {
+            $this->title_empty = $title_empty;
+        }
+
         private function getText() {
             return $this->text;
         }
 
         private function setText($text) {
             $this->text = $text;
+        }
+
+        private function getTextEmpty() {
+            return $this->text_empty;
+        }
+
+        private function setTextEmpty($text_empty) {
+            $this->text_empty = $text_empty;
         }
 
         private function getFooter() {
@@ -362,16 +386,18 @@ namespace Component\HtmlBlock {
         private function addEmpty() {
             $html_block = $this->getHtmlBlock();
             $dom_element = $this->getDomElement();
+            $title_empty = $this->getTitleEmpty();
+            $text_empty = $this->getTextEmpty();
 
             $thead = $html_block->createElement('thead');
             $tr = $html_block->createElement('tr');
-            $th = $html_block->createElement('th','Resultado da consulta de dados');
+            $th = $html_block->createElement('th',$title_empty);
             $tr->appendChild($th);
             $thead->appendChild($tr);
             
             $tbody = $html_block->createElement('tbody');
             $tr = $html_block->createElement('tr');
-            $td = $html_block->createElement('td','Nenhum registro encontrado! ');
+            $td = $html_block->createElement('td',$text_empty);
             $tr->appendChild($td);
 
             $tbody->appendChild($tr);
