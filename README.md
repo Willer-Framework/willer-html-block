@@ -1,6 +1,6 @@
 willer
 ===========
-## Willer php framework - HtmlBlock
+## Willer Framework - HtmlBlock
 
 ### Documentation
 
@@ -14,4 +14,4 @@ http://williamborba.github.io/willer
 
 #### GitHub
 
-`git clone https://github.com/williamborba/willer-htmlBlock.git`
+`git clone https://github.com/williamborba/willer-html-block.git`
