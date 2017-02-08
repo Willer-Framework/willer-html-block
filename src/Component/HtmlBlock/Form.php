@@ -234,10 +234,12 @@ namespace Component\HtmlBlock {
             $select->setAttribute('class','form-control');
             $select->setAttribute('id',vsprintf('%s-field-%s',[$element_id,$field]));
 
-            $option = $html_block->createElement('option','---');
-            $option->setAttribute('value','');
+            if (!array_key_exists('multiple',$schema->rule)) {
+                $option = $html_block->createElement('option','---');
+                $option->setAttribute('value','');
 
-            $select->appendChild($option);
+                $select->appendChild($option);
+            }
 
             $db_transaction = new Transaction();
 
@@ -689,6 +691,7 @@ namespace Component\HtmlBlock {
                 $title = $button_attribute['title'] ?? null;
                 $icon = $button_attribute['icon'] ?? null;
                 $class = $button_attribute['class'] ?? null;
+                $id = $button_attribute['id'] ?? null;
                 $style = $button_attribute['style'] ?? null;
                 $type = $button_attribute['type'] ?? 'submit';
                 $element = $button_attribute['element'] ?? 'button';
@@ -696,7 +699,7 @@ namespace Component\HtmlBlock {
 
                 $button = $html_block->createElement($element);
                 $button->setAttribute('type',$type);
-                $button->setAttribute('id',vsprintf('%s-field-button-save',[$element_id,]));
+                $button->setAttribute('id',$id);
 
                 if (!empty($href)) {
                     $button->setAttribute('href',$href);
