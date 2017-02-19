@@ -227,10 +227,13 @@ namespace Component\HtmlBlock {
             $select = $html_block->createElement('select');
 
             if (array_key_exists('multiple',$schema->rule) && !empty($schema->rule['multiple'])) {
+                $select->setAttribute('name',vsprintf('%s[]',[$field,]));
                 $select->setAttribute('multiple','multiple');
+
+            } else {
+                $select->setAttribute('name',$field);
             }
 
-            $select->setAttribute('name',$field);
             $select->setAttribute('class','form-control');
             $select->setAttribute('id',vsprintf('%s-field-%s',[$element_id,$field]));
 
@@ -239,6 +242,10 @@ namespace Component\HtmlBlock {
                 $option->setAttribute('value','');
 
                 $select->appendChild($option);
+            }
+
+            if (array_key_exists('disabled',$schema->rule) && !empty($schema->rule['disabled'])) {
+                $select->setAttribute('disabled','disabled');
             }
 
             $db_transaction = new Transaction();
@@ -278,8 +285,7 @@ namespace Component\HtmlBlock {
             }
 
             $data_list = $class
-                ->execute([
-                    'join' => 'left']);
+                ->execute();
 
             $data_list = $data_list->data;
 
@@ -289,7 +295,15 @@ namespace Component\HtmlBlock {
                     $option->setAttribute('value',$data->$class_field_primarykey);
 
                     if (!empty($model->$field)) {
-                        if ($model->$field->$class_field_primarykey == $data->$class_field_primarykey) {
+                        if (is_array($model->$field)) {
+                            foreach ($model->$field as $model_field) {
+                                if ($model_field->$class_field_primarykey == $data->$class_field_primarykey) {
+                                    $option->setAttribute('selected','selected');
+
+                                    break;
+                                }
+                            }
+                        } else if ($model->$field->$class_field_primarykey == $data->$class_field_primarykey) {
                             $option->setAttribute('selected','selected');
                         }
                     }
@@ -351,6 +365,10 @@ namespace Component\HtmlBlock {
                     $select_or_input->setAttribute('name',vsprintf('%s[]',[$field,]));
                 }
 
+                if (array_key_exists('disabled',$schema->rule) && !empty($schema->rule['disabled'])) {
+                    $select_or_input->setAttribute('disabled','disabled');
+                }
+
                 foreach ($schema->rule['option'] as $key => $value) {
                     $option = $html_block->createElement('option',$value);
                     $option->setAttribute('value',$key);
@@ -383,6 +401,10 @@ namespace Component\HtmlBlock {
                 $select_or_input->setAttribute('type',$input_type);
                 $select_or_input->setAttribute('class','form-control');
                 $select_or_input->setAttribute('id',vsprintf('%s-field-%s',[$element_id,$field]));
+
+                if (array_key_exists('disabled',$schema->rule) && !empty($schema->rule['disabled'])) {
+                    $select_or_input->setAttribute('disabled','disabled');
+                }
             }
 
             if (!empty($type) && $type == 'horizontal') {
@@ -428,6 +450,10 @@ namespace Component\HtmlBlock {
             $input->setAttribute('value','1');
             $input->setAttribute('type','checkbox');
             $input->setAttribute('id',vsprintf('%s-field-%s',[$element_id,$field]));
+
+            if (array_key_exists('disabled',$schema->rule) && !empty($schema->rule['disabled'])) {
+                $input->setAttribute('disabled','disabled');
+            }
 
             if (!empty($model->$field)) {
                 $input->setAttribute('checked','checked');
@@ -490,6 +516,10 @@ namespace Component\HtmlBlock {
             $input->setAttribute('class','form-control');
             $input->setAttribute('id',vsprintf('%s-field-%s',[$element_id,$field]));
 
+            if (array_key_exists('disabled',$schema->rule) && !empty($schema->rule['disabled'])) {
+                $input->setAttribute('disabled','disabled');
+            }
+
             if (!empty($type) && $type == 'horizontal') {
                 $div_type_horizontal = $html_block->createElement('div');
                 $div_type_horizontal->setAttribute('class','col-sm-10');
@@ -538,6 +568,10 @@ namespace Component\HtmlBlock {
             $input->setAttribute('class','form-control');
             $input->setAttribute('id',vsprintf('%s-field-%s',[$element_id,$field]));
 
+            if (array_key_exists('disabled',$schema->rule) && !empty($schema->rule['disabled'])) {
+                $input->setAttribute('disabled','disabled');
+            }
+
             if (!empty($type) && $type == 'horizontal') {
                 $div_type_horizontal = $html_block->createElement('div');
                 $div_type_horizontal->setAttribute('class','col-sm-10');
@@ -585,6 +619,10 @@ namespace Component\HtmlBlock {
             $input->setAttribute('type','text');
             $input->setAttribute('class','form-control');
             $input->setAttribute('id',vsprintf('%s-field-%s',[$element_id,$field]));
+
+            if (array_key_exists('disabled',$schema->rule) && !empty($schema->rule['disabled'])) {
+                $input->setAttribute('disabled','disabled');
+            }
 
             if (!empty($type) && $type == 'horizontal') {
                 $div_type_horizontal = $html_block->createElement('div');
@@ -644,6 +682,10 @@ namespace Component\HtmlBlock {
             $input->setAttribute('type','text');
             $input->setAttribute('class','form-control');
             $input->setAttribute('id',vsprintf('%s-field-%s',[$element_id,$field]));
+
+            if (array_key_exists('disabled',$schema->rule) && !empty($schema->rule['disabled'])) {
+                $input->setAttribute('disabled','disabled');
+            }
 
             $span->appendChild($span_icon);
             $div_group->appendChild($span);

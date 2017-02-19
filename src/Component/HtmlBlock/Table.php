@@ -680,7 +680,7 @@ namespace Component\HtmlBlock {
 
             $div_td_tr_tbody = $html_block->createElement('div');
             $div_td_tr_tbody->setAttribute('class','btn-group btn-group-xs');
-            $div_td_tr_tbody->setAttribute('style','width: 50px;');
+            $div_td_tr_tbody->setAttribute('style','min-width: 50px;');
             $div_td_tr_tbody->setAttribute('role','group');
             $div_td_tr_tbody->setAttribute('aria-label','');
 
