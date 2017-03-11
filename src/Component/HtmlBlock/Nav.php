@@ -1,11 +1,12 @@
 <?php
 
 namespace Component\HtmlBlock {
-    use Core\Exception\WException;
     use Core\Util;
+    use Core\Exception\WException;
+    use \DOMDocument as DOMDocument;
 
     class Nav {
-        private $html_block;
+        private $dom_document;
         private $dom_element;
         private $model;
         private $navbar_direction;
@@ -16,12 +17,13 @@ namespace Component\HtmlBlock {
         private $container_class;
         private $container_style;
 
-        public function __construct($html_block,...$kwargs) {
-            $this->setHtmlBlock($html_block);
-
+        public function __construct(...$kwargs) {
             if (!empty($kwargs)) {
                 $kwargs = $kwargs[0];
             }
+
+            $encoding = Util::get($kwargs,'encoding','UTF-8');
+            $this->setEncoding($encoding);
 
             $model = Util::get($kwargs,'model',null);
             $this->setModel($model);
@@ -47,7 +49,11 @@ namespace Component\HtmlBlock {
             $container_style = Util::get($kwargs,'container_style',null);
             $this->setContainerStyle($container_style);
 
-            $dom_element = $html_block->createElement('nav');
+            $dom_document = new DOMDocument(null,$encoding);
+
+            $this->setDomDocument($dom_document);
+
+            $dom_element = $dom_document->createElement('nav');
 
             if (isset($kwargs['id']) && !empty($kwargs['id'])) {
                 $dom_element->setAttribute('id',$kwargs['id']);
@@ -70,12 +76,22 @@ namespace Component\HtmlBlock {
             return $this;
         }
 
-        private function getHtmlBlock() {
-            return $this->html_block;
+        private function getDomDocument() {
+            return $this->dom_document;
         }
 
-        private function setHtmlBlock($html_block) {
-            $this->html_block = $html_block;
+        private function setDomDocument($dom_document) {
+            $this->dom_document = $dom_document;
+        }
+
+        public function getEncoding() {
+            return $this->encoding;
+        }
+
+        public function setEncoding($encoding) {
+            $this->encoding = $encoding;
+
+            return $this;
         }
 
         public function getDomElement() {
@@ -151,12 +167,12 @@ namespace Component\HtmlBlock {
         }
 
         private function addContainer() {
-            $html_block = $this->getHtmlBlock();
+            $dom_document = $this->getDomDocument();
             $dom_element = $this->getDomElement();
             $container_class = $this->getContainerClass();
             $container_style = $this->getContainerStyle();
 
-            $div_class_col = $html_block->createElement('div');
+            $div_class_col = $dom_document->createElement('div');
             $div_class_col->setAttribute('class',$container_class);
             $div_class_col->setAttribute('style',$container_style);
 
@@ -166,7 +182,7 @@ namespace Component\HtmlBlock {
         }
 
         private function ready() {
-            $html_block = $this->getHtmlBlock();
+            $dom_document = $this->getDomDocument();
             $dom_element = $this->getDomElement();
             $model = $this->getModel();
             $navbar_direction = $this->getNavBarDirection();
@@ -175,37 +191,37 @@ namespace Component\HtmlBlock {
             $title_url = $this->getTitleUrl();
             $title_img = $this->getTitleImg();
 
-            $div_container_fluid = $html_block->createElement('div');
+            $div_container_fluid = $dom_document->createElement('div');
             $div_container_fluid->setAttribute('class','container-fluid');
 
-            $div_header = $html_block->createElement('div');
+            $div_header = $dom_document->createElement('div');
             $div_header->setAttribute('class','navbar-header');
 
             if (!empty($title)) {
                 if (!empty($title_img)) {
-                    $img_brand = $html_block->createElement('img');
+                    $img_brand = $dom_document->createElement('img');
                     $img_brand->setAttribute('src',$title_img);
                     $img_brand->setAttribute('alt',$title);
                     $img_brand->setAttribute('style','float: left;margin-right: 5px;');
                     $img_brand->setAttribute('width','20');
                     $img_brand->setAttribute('height','20');
 
-                    $a_brand = $html_block->createElement('a');
+                    $a_brand = $dom_document->createElement('a');
                     $a_brand->appendChild($img_brand);
 
                     $a_brand->appendChild(new \DOMText($title));
 
                     if (!empty($title_small)) {
-                        $title_small = $html_block->createElement('small',$title_small);
+                        $title_small = $dom_document->createElement('small',$title_small);
 
                         $a_brand->appendChild($title_small);
                     }
 
                 } else {
-                    $a_brand = $html_block->createElement('a',$title);
+                    $a_brand = $dom_document->createElement('a',$title);
 
                     if (!empty($title_small)) {
-                        $title_small = $html_block->createElement('small',$title_small);
+                        $title_small = $dom_document->createElement('small',$title_small);
 
                         $a_brand->appendChild($title_small);
                     }
@@ -221,28 +237,28 @@ namespace Component\HtmlBlock {
 
             $div_collapse_id = vsprintf('%s-navbar-collapse',[mt_rand()]);
 
-            $div_collapse = $html_block->createElement('div');
+            $div_collapse = $dom_document->createElement('div');
             $div_collapse->setAttribute('class','navbar-collapse collapse');
             $div_collapse->setAttribute('id',$div_collapse_id);
 
             if (!empty($model)) {
-                $button_navbar_toggle_collapsed = $html_block->createElement('button');
+                $button_navbar_toggle_collapsed = $dom_document->createElement('button');
                 $button_navbar_toggle_collapsed->setAttribute('type','button');
                 $button_navbar_toggle_collapsed->setAttribute('class','navbar-toggle collapsed');
                 $button_navbar_toggle_collapsed->setAttribute('data-toggle','collapse');
                 $button_navbar_toggle_collapsed->setAttribute('data-target','#'.$div_collapse_id);
                 $button_navbar_toggle_collapsed->setAttribute('aria-expanded','false');
 
-                $span_sr_only = $html_block->createElement('span','Toggle navigation');
+                $span_sr_only = $dom_document->createElement('span','Toggle navigation');
                 $span_sr_only->setAttribute('class','sr-only');
 
-                $span_icon_bar_1 = $html_block->createElement('span');
+                $span_icon_bar_1 = $dom_document->createElement('span');
                 $span_icon_bar_1->setAttribute('class','icon-bar');
 
-                $span_icon_bar_2 = $html_block->createElement('span');
+                $span_icon_bar_2 = $dom_document->createElement('span');
                 $span_icon_bar_2->setAttribute('class','icon-bar');
 
-                $span_icon_bar_3 = $html_block->createElement('span');
+                $span_icon_bar_3 = $dom_document->createElement('span');
                 $span_icon_bar_3->setAttribute('class','icon-bar');
 
                 $button_navbar_toggle_collapsed->appendChild($span_sr_only);
@@ -252,7 +268,7 @@ namespace Component\HtmlBlock {
 
                 $div_header->appendChild($button_navbar_toggle_collapsed);
 
-                $ul_navbar = $html_block->createElement('ul');
+                $ul_navbar = $dom_document->createElement('ul');
 
                 if (empty($navbar_direction)) {
                     $ul_navbar->setAttribute('class','nav navbar-nav');
@@ -268,16 +284,16 @@ namespace Component\HtmlBlock {
                     $active = $model_data['active'] ?? null;
                     $model = $model_data['model'] ?? null;
 
-                    $ul_li_navbar = $html_block->createElement('li');
+                    $ul_li_navbar = $dom_document->createElement('li');
 
                     if (!empty($active)) {
                         $ul_li_navbar->setAttribute('class','active');
                     }
 
-                    $ul_li_a_navbar = $html_block->createElement('a');
+                    $ul_li_a_navbar = $dom_document->createElement('a');
 
                     if (!empty($icon)) {
-                        $ul_li_a_span_navbar = $html_block->createElement('span');
+                        $ul_li_a_span_navbar = $dom_document->createElement('span');
                         $ul_li_a_span_navbar->setAttribute('class',$icon);
 
                         $ul_li_a_navbar->appendChild($ul_li_a_span_navbar);
@@ -304,14 +320,14 @@ namespace Component\HtmlBlock {
                         $ul_li_a_navbar->setAttribute('aria-haspopup','true');
                         $ul_li_a_navbar->setAttribute('aria-expanded','false');
 
-                        $ul_li_a_span_navbar = $html_block->createElement('span');
+                        $ul_li_a_span_navbar = $dom_document->createElement('span');
                         $ul_li_a_span_navbar->setAttribute('class','caret');
 
                         $ul_li_a_navbar->appendChild($ul_li_a_span_navbar);
 
                         $ul_li_navbar->appendChild($ul_li_a_navbar);
 
-                        $ul_li_ul_navbar = $html_block->createElement('ul');
+                        $ul_li_ul_navbar = $dom_document->createElement('ul');
                         $ul_li_ul_navbar->setAttribute('class','dropdown-menu');
 
                         foreach ($model as $model_data) {
@@ -320,17 +336,17 @@ namespace Component\HtmlBlock {
                             $title = $model_data['title'] ?? null;
                             $active = $model_data['active'] ?? null;
 
-                            $ul_li_ul_li_navbar = $html_block->createElement('li');
+                            $ul_li_ul_li_navbar = $dom_document->createElement('li');
 
                             if (!empty($active)) {
                                 $ul_li_ul_li_navbar->setAttribute('class','active');
                             }
 
-                            $ul_li_ul_li_a_navbar = $html_block->createElement('a');
+                            $ul_li_ul_li_a_navbar = $dom_document->createElement('a');
                             $ul_li_ul_li_a_navbar->setAttribute('href',$href);
 
                             if (!empty($icon)) {
-                                $ul_li_ul_li_a_span_navbar = $html_block->createElement('span');
+                                $ul_li_ul_li_a_span_navbar = $dom_document->createElement('span');
                                 $ul_li_ul_li_a_span_navbar->setAttribute('class',$icon);
 
                                 $ul_li_ul_li_a_navbar->appendChild($ul_li_ul_li_a_span_navbar);
@@ -361,11 +377,9 @@ namespace Component\HtmlBlock {
         }
 
         public function renderHtml() {
-            $html_block = $this->getHtmlBlock();
+            $dom_document = $this->getDomDocument();
 
-            $html_block->appendBody($this);
-
-            return $html_block->renderHtml();
+            return $dom_document->saveHTML();
         }
     }
 }

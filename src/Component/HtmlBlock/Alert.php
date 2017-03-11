@@ -1,22 +1,24 @@
 <?php
 
 namespace Component\HtmlBlock {
-    use Core\Exception\WException;
     use Core\Util;
+    use Core\Exception\WException;
+    use \DOMDocument as DOMDocument;
 
     class Alert {
-        private $html_block;
+        private $dom_document;
         private $dom_element;
         private $model;
         private $container_class;
         private $container_style;
 
-        public function __construct($html_block,...$kwargs) {
-            $this->setHtmlBlock($html_block);
-
+        public function __construct(...$kwargs) {
             if (!empty($kwargs)) {
                 $kwargs = $kwargs[0];
             }
+
+            $encoding = Util::get($kwargs,'encoding','UTF-8');
+            $this->setEncoding($encoding);
 
             $model = Util::get($kwargs,'model',null);
             $this->setModel($model);
@@ -27,7 +29,11 @@ namespace Component\HtmlBlock {
             $container_style = Util::get($kwargs,'container_style',null);
             $this->setContainerStyle($container_style);
 
-            $dom_element = $html_block->createElement('div');
+            $dom_document = new DOMDocument(null,$encoding);
+
+            $this->setDomDocument($dom_document);
+
+            $dom_element = $dom_document->createElement('div');
             $dom_element->setAttribute('role','alert');
 
             if (isset($kwargs['id']) && !empty($kwargs['id'])) {
@@ -51,12 +57,22 @@ namespace Component\HtmlBlock {
             return $this;
         }
 
-        private function getHtmlBlock() {
-            return $this->html_block;
+        private function getDomDocument() {
+            return $this->dom_document;
         }
 
-        private function setHtmlBlock($html_block) {
-            $this->html_block = $html_block;
+        private function setDomDocument($dom_document) {
+            $this->dom_document = $dom_document;
+        }
+
+        public function getEncoding() {
+            return $this->encoding;
+        }
+
+        public function setEncoding($encoding) {
+            $this->encoding = $encoding;
+
+            return $this;
         }
 
         public function getDomElement() {
@@ -92,12 +108,12 @@ namespace Component\HtmlBlock {
         }
 
         private function addContainer() {
-            $html_block = $this->getHtmlBlock();
+            $dom_document = $this->getDomDocument();
             $dom_element = $this->getDomElement();
             $container_class = $this->getContainerClass();
             $container_style = $this->getContainerStyle();
  
-            $div_class_col = $html_block->createElement('div');
+            $div_class_col = $dom_document->createElement('div');
             $div_class_col->setAttribute('class',$container_class);
             $div_class_col->setAttribute('style',$container_style);
  
@@ -107,7 +123,7 @@ namespace Component\HtmlBlock {
         }
 
         private function ready() {
-            $html_block = $this->getHtmlBlock();
+            $dom_document = $this->getDomDocument();
             $dom_element = $this->getDomElement();
             $model = $this->getModel();
 
@@ -121,18 +137,18 @@ namespace Component\HtmlBlock {
                 $message = Util::get($model_item,'message','');
                 $type = Util::get($model_item,'type',null);
 
-                $button = $html_block->createElement('button');
+                $button = $dom_document->createElement('button');
                 $button->setAttribute('type','button');
                 $button->setAttribute('class','close');
                 $button->setAttribute('data-dismiss','alert');
                 $button->setAttribute('aria-label','Close');
 
-                // $span = $html_block->createElement('span','&times;');
+                // $span = $dom_document->createElement('span','&times;');
                 // $span->setAttribute('aria-hidden','true');
 
                 // $button->appendChild($span);
 
-                $p = $html_block->createElement('p',$message);
+                $p = $dom_document->createElement('p',$message);
 
                 if (!empty($type)) {
                     $dom_element->setAttribute('class',vsprintf('alert alert-%s alert-dismissible',[$type]));
@@ -146,11 +162,9 @@ namespace Component\HtmlBlock {
         }
 
         public function renderHtml() {
-            $html_block = $this->getHtmlBlock();
+            $dom_document = $this->getDomDocument();
 
-            $html_block->appendBodyContainerRow($this);
-
-            return $html_block->renderHtml();
+            return $dom_document->saveHTML();
         }
     }
 }

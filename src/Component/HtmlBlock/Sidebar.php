@@ -1,11 +1,12 @@
 <?php
 
 namespace Component\HtmlBlock {
-    use Core\Exception\WException;
     use Core\Util;
+    use Core\Exception\WException;
+    use \DOMDocument as DOMDocument;
 
     class Sidebar {
-        private $html_block;
+        private $dom_document;
         private $dom_element;
         private $model;
         private $title;
@@ -14,9 +15,7 @@ namespace Component\HtmlBlock {
         private $container_class;
         private $container_style;
 
-        public function __construct($html_block,...$kwargs) {
-            $this->setHtmlBlock($html_block);
-
+        public function __construct(...$kwargs) {
             if (!empty($kwargs)) {
                 $kwargs = $kwargs[0];
             }
@@ -39,7 +38,11 @@ namespace Component\HtmlBlock {
             $container_style = Util::get($kwargs,'container_style',null);
             $this->setContainerStyle($container_style);
 
-            $dom_element = $html_block->createElement('ul');
+            $dom_document = new DOMDocument(null,$encoding);
+
+            $this->setDomDocument($dom_document);
+
+            $dom_element = $dom_document->createElement('ul');
 
             if (isset($kwargs['id']) && !empty($kwargs['id'])) {
                 $dom_element->setAttribute('id',$kwargs['id']);
@@ -62,12 +65,22 @@ namespace Component\HtmlBlock {
             return $this;
         }
 
-        private function getHtmlBlock() {
-            return $this->html_block;
+        private function getDomDocument() {
+            return $this->dom_document;
         }
 
-        private function setHtmlBlock($html_block) {
-            $this->html_block = $html_block;
+        private function setDomDocument($dom_document) {
+            $this->dom_document = $dom_document;
+        }
+
+        public function getEncoding() {
+            return $this->encoding;
+        }
+
+        public function setEncoding($encoding) {
+            $this->encoding = $encoding;
+
+            return $this;
         }
 
         private function getModel() {
@@ -127,7 +140,7 @@ namespace Component\HtmlBlock {
         }
 
         private function addPanel() {
-            $html_block = $this->getHtmlBlock();
+            $dom_document = $this->getDomDocument();
             $dom_element = $this->getDomElement();
             $title = $this->getTitle();
             $text = $this->getText();
@@ -137,19 +150,19 @@ namespace Component\HtmlBlock {
                 return false;
             }
  
-            $div_class_panel = $html_block->createElement('div');
+            $div_class_panel = $dom_document->createElement('div');
             $div_class_panel->setAttribute('class','panel panel-default');
  
             if (!empty($title)) {
-                $div_class_panel_head = $html_block->createElement('div',$title);
+                $div_class_panel_head = $dom_document->createElement('div',$title);
                 $div_class_panel_head->setAttribute('class','panel-heading');
                 $node_div_panel_head = $div_class_panel->appendChild($div_class_panel_head);
             }
  
-            $div_class_panel_body = $html_block->createElement('div');
+            $div_class_panel_body = $dom_document->createElement('div');
 
             if (!empty($text)) {
-                $p_text = $html_block->createElement('p',$text);
+                $p_text = $dom_document->createElement('p',$text);
                 $div_class_panel_body->appendChild($p_text);
             }
 
@@ -158,7 +171,7 @@ namespace Component\HtmlBlock {
             $node_div_panel_body->appendChild($dom_element);
  
             if (!empty($footer)) {
-                $div_class_panel_footer = $html_block->createElement('div',$footer);
+                $div_class_panel_footer = $dom_document->createElement('div',$footer);
                 $div_class_panel_footer->setAttribute('class','panel-footer');
                 $node_div_panel_footer = $div_class_panel->appendChild($div_class_panel_footer);
             }
@@ -167,12 +180,12 @@ namespace Component\HtmlBlock {
         }
 
         private function addContainer() {
-            $html_block = $this->getHtmlBlock();
+            $dom_document = $this->getDomDocument();
             $dom_element = $this->getDomElement();
             $container_class = $this->getContainerClass();
             $container_style = $this->getContainerStyle();
  
-            $div_class_col = $html_block->createElement('div');
+            $div_class_col = $dom_document->createElement('div');
             $div_class_col->setAttribute('class',$container_class);
             $div_class_col->setAttribute('style',$container_style);
  
@@ -182,14 +195,14 @@ namespace Component\HtmlBlock {
         }
 
         private function ready() {
-            $html_block = $this->getHtmlBlock();
+            $dom_document = $this->getDomDocument();
             $dom_element = $this->getDomElement();
             $model = $this->getModel();
 
             foreach ($model as $name => $route) {
-                $li_menu = $html_block->createElement('li');
+                $li_menu = $dom_document->createElement('li');
 
-                $li_a_menu = $html_block->createElement('a',$name);
+                $li_a_menu = $dom_document->createElement('a',$name);
                 $li_a_menu->setAttribute('href',$route);
 
                 $li_menu->appendChild($li_a_menu);
@@ -202,11 +215,9 @@ namespace Component\HtmlBlock {
         }
 
         public function renderHtml() {
-            $html_block = $this->getHtmlBlock();
+            $dom_document = $this->getDomDocument();
 
-            $html_block->appendBodyContainerRow($this);
-
-            return $html_block->renderHtml();
+            return $dom_document->saveHTML();
         }
     }
 }

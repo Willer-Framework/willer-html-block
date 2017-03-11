@@ -1,12 +1,13 @@
 <?php
 
 namespace Component\HtmlBlock {
-    use Core\DAO\Transaction;
     use Core\{Util,Request};
+    use Core\DAO\Transaction;
     use Core\Exception\WException;
+    use \DOMDocument as DOMDocument;
 
     class Form {
-        private $html_block;
+        private $dom_document;
         private $dom_element;
         private $model;
         private $id;
@@ -18,12 +19,13 @@ namespace Component\HtmlBlock {
         private $container_class;
         private $container_style;
 
-        public function __construct($html_block,...$kwargs) {
-            $this->setHtmlBlock($html_block);
-
+        public function __construct(...$kwargs) {
             if (!empty($kwargs)) {
                 $kwargs = $kwargs[0];
             }
+
+            $encoding = Util::get($kwargs,'encoding','UTF-8');
+            $this->setEncoding($encoding);
 
             $model = Util::get($kwargs,'model',null);
             $this->setModel($model);
@@ -49,7 +51,11 @@ namespace Component\HtmlBlock {
             $container_style = Util::get($kwargs,'container_style',null);
             $this->setContainerStyle($container_style);
 
-            $dom_element = $html_block->createElement('form');
+            $dom_document = new DOMDocument(null,$encoding);
+
+            $this->setDomDocument($dom_document);
+
+            $dom_element = $dom_document->createElement('form');
 
             if (isset($kwargs['id']) && !empty($kwargs['id'])) {
                 $dom_element->setAttribute('id',$kwargs['id']);
@@ -98,12 +104,22 @@ namespace Component\HtmlBlock {
             return $this;
         }
 
-        private function getHtmlBlock() {
-            return $this->html_block;
+        private function getDomDocument() {
+            return $this->dom_document;
         }
 
-        private function setHtmlBlock($html_block) {
-            $this->html_block = $html_block;
+        private function setDomDocument($dom_document) {
+            $this->dom_document = $dom_document;
+        }
+
+        public function getEncoding() {
+            return $this->encoding;
+        }
+
+        public function setEncoding($encoding) {
+            $this->encoding = $encoding;
+
+            return $this;
         }
 
         public function getDomElement() {
@@ -187,10 +203,10 @@ namespace Component\HtmlBlock {
         }
 
         private function addFieldPrimaryKey($model,$schema,$field) {
-            $html_block = $this->getHtmlBlock();
+            $dom_document = $this->getDomDocument();
             $element_id = $this->getId();
 
-            $input = $html_block->createElement('input');
+            $input = $dom_document->createElement('input');
             $input->setAttribute('name',$field);
             $input->setAttribute('value',$model->$field);
             $input->setAttribute('type','hidden');
@@ -200,11 +216,11 @@ namespace Component\HtmlBlock {
         }
 
         private function addFieldForeignKey($model,$schema,$field) {
-            $html_block = $this->getHtmlBlock();
+            $dom_document = $this->getDomDocument();
             $element_id = $this->getId();
             $type = $this->getType();
 
-            $div = $html_block->createElement('div');
+            $div = $dom_document->createElement('div');
             $div->setAttribute('class','form-group');
 
             $field_label = $field;
@@ -217,14 +233,14 @@ namespace Component\HtmlBlock {
                 $field_label = vsprintf('%s*',[$field_label,]);
             }
 
-            $label = $html_block->createElement('label',$field_label);
+            $label = $dom_document->createElement('label',$field_label);
             $label->setAttribute('for',vsprintf('%s-field-%s',[$element_id,$field]));
 
             if (!empty($type) && $type == 'horizontal') {
                 $label->setAttribute('class','col-sm-2 control-label');
             }
 
-            $select = $html_block->createElement('select');
+            $select = $dom_document->createElement('select');
 
             if (array_key_exists('multiple',$schema->rule) && !empty($schema->rule['multiple'])) {
                 $select->setAttribute('name',vsprintf('%s[]',[$field,]));
@@ -238,7 +254,7 @@ namespace Component\HtmlBlock {
             $select->setAttribute('id',vsprintf('%s-field-%s',[$element_id,$field]));
 
             if (!array_key_exists('multiple',$schema->rule)) {
-                $option = $html_block->createElement('option','---');
+                $option = $dom_document->createElement('option','---');
                 $option->setAttribute('value','');
 
                 $select->appendChild($option);
@@ -291,7 +307,7 @@ namespace Component\HtmlBlock {
 
             if (!empty($data_list)) {
                 foreach ($data_list as $data) {
-                    $option = $html_block->createElement('option',$data->$class_field_reference);
+                    $option = $dom_document->createElement('option',$data->$class_field_reference);
                     $option->setAttribute('value',$data->$class_field_primarykey);
 
                     if (!empty($model->$field)) {
@@ -313,7 +329,7 @@ namespace Component\HtmlBlock {
             }
 
             if (!empty($type) && $type == 'horizontal') {
-                $div_type_horizontal = $html_block->createElement('div');
+                $div_type_horizontal = $dom_document->createElement('div');
                 $div_type_horizontal->setAttribute('class','col-sm-10');
                 $div_type_horizontal->appendChild($select);
 
@@ -329,11 +345,11 @@ namespace Component\HtmlBlock {
         }
 
         private function addFieldChar($model,$schema,$field) {
-            $html_block = $this->getHtmlBlock();
+            $dom_document = $this->getDomDocument();
             $element_id = $this->getId();
             $type = $this->getType();
 
-            $div = $html_block->createElement('div');
+            $div = $dom_document->createElement('div');
             $div->setAttribute('class','form-group');
 
             $field_label = $field;
@@ -346,7 +362,7 @@ namespace Component\HtmlBlock {
                 $field_label = vsprintf('%s*',[$field_label,]);
             }
 
-            $label = $html_block->createElement('label',$field_label);
+            $label = $dom_document->createElement('label',$field_label);
             $label->setAttribute('for',vsprintf('%s-field-%s',[$element_id,$field]));
 
             if (!empty($type) && $type == 'horizontal') {
@@ -354,7 +370,7 @@ namespace Component\HtmlBlock {
             }
 
             if (array_key_exists('option',$schema->rule) && !empty($schema->rule['option'])) {
-                $select_or_input = $html_block->createElement('select');
+                $select_or_input = $dom_document->createElement('select');
                 $select_or_input->setAttribute('name',$field);
                 $select_or_input->setAttribute('class','form-control');
                 $select_or_input->setAttribute('id',vsprintf('%s-field-%s',[$element_id,$field]));
@@ -370,7 +386,7 @@ namespace Component\HtmlBlock {
                 }
 
                 foreach ($schema->rule['option'] as $key => $value) {
-                    $option = $html_block->createElement('option',$value);
+                    $option = $dom_document->createElement('option',$value);
                     $option->setAttribute('value',$key);
 
                     if (array_key_exists('multiple',$schema->rule) && !empty($schema->rule['multiple'])) {
@@ -395,7 +411,7 @@ namespace Component\HtmlBlock {
                     $input_type = 'password';
                 }
 
-                $select_or_input = $html_block->createElement('input');
+                $select_or_input = $dom_document->createElement('input');
                 $select_or_input->setAttribute('name',$field);
                 $select_or_input->setAttribute('value',$model->$field);
                 $select_or_input->setAttribute('type',$input_type);
@@ -408,7 +424,7 @@ namespace Component\HtmlBlock {
             }
 
             if (!empty($type) && $type == 'horizontal') {
-                $div_type_horizontal = $html_block->createElement('div');
+                $div_type_horizontal = $dom_document->createElement('div');
                 $div_type_horizontal->setAttribute('class','col-sm-10');
                 $div_type_horizontal->appendChild($select_or_input);
 
@@ -424,11 +440,11 @@ namespace Component\HtmlBlock {
         }
 
         private function addFieldBoolean($model,$schema,$field) {
-            $html_block = $this->getHtmlBlock();
+            $dom_document = $this->getDomDocument();
             $element_id = $this->getId();
             $type = $this->getType();
 
-            $div = $html_block->createElement('div');
+            $div = $dom_document->createElement('div');
             $div->setAttribute('class','checkbox');
 
             $field_label = $field;
@@ -441,11 +457,11 @@ namespace Component\HtmlBlock {
                 $field_label = vsprintf('%s*',[$field_label,]);
             }
 
-            $label = $html_block->createElement('label');
+            $label = $dom_document->createElement('label');
 
-            $paragraph = $html_block->createElement('p',$field_label);
+            $paragraph = $dom_document->createElement('p',$field_label);
 
-            $input = $html_block->createElement('input');
+            $input = $dom_document->createElement('input');
             $input->setAttribute('name',$field);
             $input->setAttribute('value','1');
             $input->setAttribute('type','checkbox');
@@ -460,10 +476,10 @@ namespace Component\HtmlBlock {
             }
 
             if (!empty($type) && $type == 'horizontal') {
-                $div_space_type_horizontal = $html_block->createElement('div');
+                $div_space_type_horizontal = $dom_document->createElement('div');
                 $div_space_type_horizontal->setAttribute('class','col-sm-2');
 
-                $div_type_horizontal = $html_block->createElement('div');
+                $div_type_horizontal = $dom_document->createElement('div');
                 $div_type_horizontal->setAttribute('class','col-sm-10');
                 $div_type_horizontal->appendChild($input);
 
@@ -486,11 +502,11 @@ namespace Component\HtmlBlock {
         }
 
         private function addFieldText($model,$schema,$field) {
-            $html_block = $this->getHtmlBlock();
+            $dom_document = $this->getDomDocument();
             $element_id = $this->getId();
             $type = $this->getType();
 
-            $div = $html_block->createElement('div');
+            $div = $dom_document->createElement('div');
             $div->setAttribute('class','form-group');
 
             $field_label = $field;
@@ -503,14 +519,14 @@ namespace Component\HtmlBlock {
                 $field_label = vsprintf('%s*',[$field_label,]);
             }
 
-            $label = $html_block->createElement('label',$field_label);
+            $label = $dom_document->createElement('label',$field_label);
             $label->setAttribute('for',vsprintf('%s-field-%s',[$element_id,$field]));
 
             if (!empty($type) && $type == 'horizontal') {
                 $label->setAttribute('class','col-sm-2 control-label');
             }
 
-            $input = $html_block->createElement('textarea',$model->$field);
+            $input = $dom_document->createElement('textarea',$model->$field);
             $input->setAttribute('rows','3');
             $input->setAttribute('name',$field);
             $input->setAttribute('class','form-control');
@@ -521,7 +537,7 @@ namespace Component\HtmlBlock {
             }
 
             if (!empty($type) && $type == 'horizontal') {
-                $div_type_horizontal = $html_block->createElement('div');
+                $div_type_horizontal = $dom_document->createElement('div');
                 $div_type_horizontal->setAttribute('class','col-sm-10');
                 $div_type_horizontal->appendChild($input);
 
@@ -537,11 +553,11 @@ namespace Component\HtmlBlock {
         }
 
         private function addFieldFloat($model,$schema,$field) {
-            $html_block = $this->getHtmlBlock();
+            $dom_document = $this->getDomDocument();
             $element_id = $this->getId();
             $type = $this->getType();
 
-            $div = $html_block->createElement('div');
+            $div = $dom_document->createElement('div');
             $div->setAttribute('class','form-group');
 
             $field_label = $field;
@@ -554,14 +570,14 @@ namespace Component\HtmlBlock {
                 $field_label = vsprintf('%s*',[$field_label,]);
             }
 
-            $label = $html_block->createElement('label',$field_label);
+            $label = $dom_document->createElement('label',$field_label);
             $label->setAttribute('for',vsprintf('%s-field-%s',[$element_id,$field]));
 
             if (!empty($type) && $type == 'horizontal') {
                 $label->setAttribute('class','col-sm-2 control-label');
             }
 
-            $input = $html_block->createElement('input');
+            $input = $dom_document->createElement('input');
             $input->setAttribute('name',$field);
             $input->setAttribute('value',$model->$field);
             $input->setAttribute('type','text');
@@ -573,7 +589,7 @@ namespace Component\HtmlBlock {
             }
 
             if (!empty($type) && $type == 'horizontal') {
-                $div_type_horizontal = $html_block->createElement('div');
+                $div_type_horizontal = $dom_document->createElement('div');
                 $div_type_horizontal->setAttribute('class','col-sm-10');
                 $div_type_horizontal->appendChild($input);
 
@@ -589,11 +605,11 @@ namespace Component\HtmlBlock {
         }
 
         private function addFieldInteger($model,$schema,$field) {
-            $html_block = $this->getHtmlBlock();
+            $dom_document = $this->getDomDocument();
             $element_id = $this->getId();
             $type = $this->getType();
 
-            $div = $html_block->createElement('div');
+            $div = $dom_document->createElement('div');
             $div->setAttribute('class','form-group');
 
             $field_label = $field;
@@ -606,14 +622,14 @@ namespace Component\HtmlBlock {
                 $field_label = vsprintf('%s*',[$field_label,]);
             }
 
-            $label = $html_block->createElement('label',$field_label);
+            $label = $dom_document->createElement('label',$field_label);
             $label->setAttribute('for',vsprintf('%s-field-%s',[$element_id,$field]));
 
             if (!empty($type) && $type == 'horizontal') {
                 $label->setAttribute('class','col-sm-2 control-label');
             }
 
-            $input = $html_block->createElement('input');
+            $input = $dom_document->createElement('input');
             $input->setAttribute('name',$field);
             $input->setAttribute('value',$model->$field);
             $input->setAttribute('type','text');
@@ -625,7 +641,7 @@ namespace Component\HtmlBlock {
             }
 
             if (!empty($type) && $type == 'horizontal') {
-                $div_type_horizontal = $html_block->createElement('div');
+                $div_type_horizontal = $dom_document->createElement('div');
                 $div_type_horizontal->setAttribute('class','col-sm-10');
                 $div_type_horizontal->appendChild($input);
 
@@ -641,11 +657,11 @@ namespace Component\HtmlBlock {
         }
 
         private function addFieldDatetime($model,$schema,$field) {
-            $html_block = $this->getHtmlBlock();
+            $dom_document = $this->getDomDocument();
             $element_id = $this->getId();
             $type = $this->getType();
 
-            $div = $html_block->createElement('div');
+            $div = $dom_document->createElement('div');
             $div->setAttribute('class','form-group');
 
             $field_label = $field;
@@ -658,25 +674,25 @@ namespace Component\HtmlBlock {
                 $field_label = vsprintf('%s*',[$field_label,]);
             }
 
-            $label = $html_block->createElement('label',$field_label);
+            $label = $dom_document->createElement('label',$field_label);
             $label->setAttribute('for',vsprintf('%s-field-%s',[$element_id,$field]));
 
             if (!empty($type) && $type == 'horizontal') {
                 $label->setAttribute('class','col-sm-2 control-label');
             }
 
-            $div_group = $html_block->createElement('div');
+            $div_group = $dom_document->createElement('div');
             $div_group->setAttribute('class','input-group');
 
-            $span_icon = $html_block->createElement('span');
+            $span_icon = $dom_document->createElement('span');
             $span_icon->setAttribute('class','glyphicon glyphicon-calendar');
             $span_icon->setAttribute('aria-hidden','true');
 
-            $span = $html_block->createElement('span');
+            $span = $dom_document->createElement('span');
             $span->setAttribute('class','input-group-addon');
             $span->setAttribute('id',vsprintf('%s-icon-field-%s',[$element_id,$field]));
 
-            $input = $html_block->createElement('input');
+            $input = $dom_document->createElement('input');
             $input->setAttribute('name',$field);
             $input->setAttribute('value',$model->$field);
             $input->setAttribute('type','text');
@@ -695,7 +711,7 @@ namespace Component\HtmlBlock {
             $div->appendChild($div_group);
 
             if (!empty($type) && $type == 'horizontal') {
-                $div_type_horizontal = $html_block->createElement('div');
+                $div_type_horizontal = $dom_document->createElement('div');
                 $div_type_horizontal->setAttribute('class','col-sm-10');
                 $div_type_horizontal->appendChild($div_group);
 
@@ -711,12 +727,12 @@ namespace Component\HtmlBlock {
         }
 
         private function addButton() {
-            $html_block = $this->getHtmlBlock();
+            $dom_document = $this->getDomDocument();
             $dom_element = $this->getDomElement();
             $element_id = $this->getId();
             $button = $this->getButton();
 
-            $div = $html_block->createElement('div');
+            $div = $dom_document->createElement('div');
             $div->setAttribute('class','btn-group');
             $div->setAttribute('role','group');
             $div->setAttribute('aria-label','...');
@@ -739,7 +755,7 @@ namespace Component\HtmlBlock {
                 $element = $button_attribute['element'] ?? 'button';
                 $href = $button_attribute['href'] ?? null;
 
-                $button = $html_block->createElement($element);
+                $button = $dom_document->createElement($element);
                 $button->setAttribute('type',$type);
                 $button->setAttribute('id',$id);
 
@@ -760,7 +776,7 @@ namespace Component\HtmlBlock {
                 }
 
                 if (!empty($icon)) {
-                    $span = $html_block->createElement('span');
+                    $span = $dom_document->createElement('span');
                     $span->setAttribute('class',$icon);
 
                     $button->appendChild($span);
@@ -775,7 +791,7 @@ namespace Component\HtmlBlock {
         }
 
         private function addPanel() {
-            $html_block = $this->getHtmlBlock();
+            $dom_document = $this->getDomDocument();
             $dom_element = $this->getDomElement();
             $title = $this->getTitle();
             $text = $this->getText();
@@ -785,19 +801,19 @@ namespace Component\HtmlBlock {
                 return false;
             }
 
-            $div_class_panel = $html_block->createElement('div');
+            $div_class_panel = $dom_document->createElement('div');
             $div_class_panel->setAttribute('class','panel panel-default');
 
             if (!empty($title)) {
-                $div_class_panel_head = $html_block->createElement('div',$title);
+                $div_class_panel_head = $dom_document->createElement('div',$title);
                 $div_class_panel_head->setAttribute('class','panel-heading');
                 $node_div_panel_head = $div_class_panel->appendChild($div_class_panel_head);
             }
 
-            $div_class_panel_body = $html_block->createElement('div');
+            $div_class_panel_body = $dom_document->createElement('div');
 
             if (!empty($text)) {
-                $p_text = $html_block->createElement('p',$text);
+                $p_text = $dom_document->createElement('p',$text);
                 $div_class_panel_body->appendChild($p_text);
             }
 
@@ -806,7 +822,7 @@ namespace Component\HtmlBlock {
             $node_div_panel_body->appendChild($dom_element);
 
             if (!empty($footer)) {
-                $div_class_panel_footer = $html_block->createElement('div',$footer);
+                $div_class_panel_footer = $dom_document->createElement('div',$footer);
                 $div_class_panel_footer->setAttribute('class','panel-footer');
                 $node_div_panel_footer = $div_class_panel->appendChild($div_class_panel_footer);
             }
@@ -815,12 +831,12 @@ namespace Component\HtmlBlock {
         }
 
         private function addContainer() {
-            $html_block = $this->getHtmlBlock();
+            $dom_document = $this->getDomDocument();
             $dom_element = $this->getDomElement();
             $container_class = $this->getContainerClass();
             $container_style = $this->getContainerStyle();
 
-            $div_class_col = $html_block->createElement('div');
+            $div_class_col = $dom_document->createElement('div');
             $div_class_col->setAttribute('class',$container_class);
             $div_class_col->setAttribute('style',$container_style);
 
@@ -833,10 +849,10 @@ namespace Component\HtmlBlock {
             $model = $this->getModel();
 
             $request = new Request();
-            $html_block_form = $request->getHttpSession('html_block_form');
+            $dom_document_form = $request->getHttpSession('html_block_form');
 
-            if (!empty($html_block_form)) {
-                foreach ($html_block_form as $field_key => $field_value) {
+            if (!empty($dom_document_form)) {
+                foreach ($dom_document_form as $field_key => $field_value) {
                     if (array_key_exists($field_key,$model)) {
                         $model->$field_key = $field_value;
                     }
@@ -851,7 +867,7 @@ namespace Component\HtmlBlock {
         }
 
         private function ready() {
-            $html_block = $this->getHtmlBlock();
+            $dom_document = $this->getDomDocument();
             $dom_element = $this->getDomElement();
             $this->modelPersist();
             $model = $this->getModel();
@@ -906,13 +922,13 @@ namespace Component\HtmlBlock {
             }
 
             if (!empty($type) && $type == 'horizontal') {
-                $div_row_type_horizontal = $html_block->createElement('div');
+                $div_row_type_horizontal = $dom_document->createElement('div');
                 $div_row_type_horizontal->setAttribute('class','row');
 
-                $div_space_type_horizontal = $html_block->createElement('div');
+                $div_space_type_horizontal = $dom_document->createElement('div');
                 $div_space_type_horizontal->setAttribute('class','col-sm-2');
 
-                $div_type_horizontal = $html_block->createElement('div');
+                $div_type_horizontal = $dom_document->createElement('div');
                 $div_type_horizontal->setAttribute('class','col-sm-10');
 
                 $div_button = $this->addButton();
@@ -933,11 +949,9 @@ namespace Component\HtmlBlock {
         }
 
         public function renderHtml() {
-            $html_block = $this->getHtmlBlock();
+            $dom_document = $this->getDomDocument();
 
-            $html_block->appendBodyContainerRow($this);
-
-            return $html_block->renderHtml();
+            return $dom_document->saveHTML();
         }
     }
 }
