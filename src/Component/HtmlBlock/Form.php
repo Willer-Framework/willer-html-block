@@ -1,7 +1,7 @@
 <?php
 
 namespace Component\HtmlBlock {
-    use Core\{Util,Request};
+    use Core\{Util,WUtil,Request};
     use Core\DAO\Transaction;
     use Core\Exception\WException;
     use \DOMDocument as DOMDocument;
@@ -629,28 +629,66 @@ namespace Component\HtmlBlock {
                 $label->setAttribute('class','col-sm-2 control-label');
             }
 
-            $input = $dom_document->createElement('input');
-            $input->setAttribute('name',$field);
-            $input->setAttribute('value',$model->$field);
-            $input->setAttribute('type','text');
-            $input->setAttribute('class','form-control');
-            $input->setAttribute('id',vsprintf('%s-field-%s',[$element_id,$field]));
+            if (array_key_exists('option',$schema->rule) && !empty($schema->rule['option'])) {
+                $select_or_input = $dom_document->createElement('select');
+                $select_or_input->setAttribute('name',$field);
+                $select_or_input->setAttribute('class','form-control');
+                $select_or_input->setAttribute('id',vsprintf('%s-field-%s',[$element_id,$field]));
 
-            if (array_key_exists('disabled',$schema->rule) && !empty($schema->rule['disabled'])) {
-                $input->setAttribute('disabled','disabled');
+                if (array_key_exists('multiple',$schema->rule) && !empty($schema->rule['multiple'])) {
+                    $select_or_input->setAttribute('multiple','multiple');
+                    $select_or_input->removeAttribute('name');
+                    $select_or_input->setAttribute('name',vsprintf('%s[]',[$field,]));
+                }
+
+                if (array_key_exists('disabled',$schema->rule) && !empty($schema->rule['disabled'])) {
+                    $select_or_input->setAttribute('disabled','disabled');
+                }
+
+                foreach ($schema->rule['option'] as $key => $value) {
+                    $option = $dom_document->createElement('option',$value);
+                    $option->setAttribute('value',$key);
+
+                    if (array_key_exists('multiple',$schema->rule) && !empty($schema->rule['multiple'])) {
+                        if (!is_null($model->$field) && in_array($key,$model->$field)) {
+                            $option->setAttribute('selected','selected');
+                        }
+
+                    } else {
+                        if (!is_null($model->$field) && $model->$field == $key) {
+                            $option->setAttribute('selected','selected');
+                        }
+                    }
+
+                    $select_or_input->appendChild($option);
+                }
+
+            } else {
+                $input_type = 'text';
+
+                $select_or_input = $dom_document->createElement('input');
+                $select_or_input->setAttribute('name',$field);
+                $select_or_input->setAttribute('value',$model->$field);
+                $select_or_input->setAttribute('type',$input_type);
+                $select_or_input->setAttribute('class','form-control');
+                $select_or_input->setAttribute('id',vsprintf('%s-field-%s',[$element_id,$field]));
+
+                if (array_key_exists('disabled',$schema->rule) && !empty($schema->rule['disabled'])) {
+                    $select_or_input->setAttribute('disabled','disabled');
+                }
             }
 
             if (!empty($type) && $type == 'horizontal') {
                 $div_type_horizontal = $dom_document->createElement('div');
                 $div_type_horizontal->setAttribute('class','col-sm-10');
-                $div_type_horizontal->appendChild($input);
+                $div_type_horizontal->appendChild($select_or_input);
 
                 $div->appendChild($label);
                 $div->appendChild($div_type_horizontal);
 
             } else {
                 $div->appendChild($label);
-                $div->appendChild($input);
+                $div->appendChild($select_or_input);
             }
 
             return $div;
@@ -849,11 +887,15 @@ namespace Component\HtmlBlock {
             $model = $this->getModel();
 
             $request = new Request();
-            $dom_document_form = $request->getHttpSession('html_block_form');
+            $wutil = new WUtil();
 
-            if (!empty($dom_document_form)) {
-                foreach ($dom_document_form as $field_key => $field_value) {
-                    if (array_key_exists($field_key,$model)) {
+            $dom_document_form = $request->getHttpSession();
+
+            $html_block_form = $wutil->contains($request->getHttpSession(),'html_block_form')->getArray();
+
+            if (!empty($html_block_form)) {
+                foreach ($html_block_form as $field_key => $field_value) {
+                    if (property_exists($model,$field_key)) {
                         $model->$field_key = $field_value;
                     }
                 }

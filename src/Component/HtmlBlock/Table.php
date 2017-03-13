@@ -468,6 +468,10 @@ namespace Component\HtmlBlock {
 
                     } else if ($type == 'td') {
                         if (array_key_exists('option',$object_schema[$column_value]->rule) && !empty($object_schema[$column_value]->rule['option'])) {
+                            if (empty($data->$column_value)) {
+                                $data->$column_value = '0';
+                            }
+
                             if (array_key_exists((string) $object->$column_value,$object_schema[$column_value]->rule['option'])) {
                                 $object->$column_value = $object_schema[$column_value]->rule['option'][$object->$column_value];
                             }
@@ -520,7 +524,7 @@ namespace Component\HtmlBlock {
 
                     $field_name = vsprintf('%s__%s',[$data_table_name,$column_value]);
 
-                    if (in_array($data_schema[$column_value]->method,['char','boolean']) && array_key_exists('option',$data_schema[$column_value]->rule)) {
+                    if (in_array($data_schema[$column_value]->method,['char','boolean','integer']) && array_key_exists('option',$data_schema[$column_value]->rule)) {
                         $field = $dom_document->createElement('select');
                         $field->setAttribute('name',$field_name);
                         $field->setAttribute('id',vsprintf('%s-search-%s-%s',[$element_id,$data_table_name,$column_value]));
@@ -777,6 +781,10 @@ namespace Component\HtmlBlock {
                         }
 
                         if (array_key_exists('option',$data_schema[$column_value]->rule) && !empty($data_schema[$column_value]->rule['option'])) {
+                            if (empty($data->$column_value)) {
+                                $data->$column_value = '0';
+                            }
+
                             if (array_key_exists((string) $data->$column_value,$data_schema[$column_value]->rule['option'])) {
                                 $data->$column_value = $data_schema[$column_value]->rule['option'][$data->$column_value];
                             }
