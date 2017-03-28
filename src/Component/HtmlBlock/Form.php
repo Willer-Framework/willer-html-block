@@ -35,7 +35,7 @@ namespace Component\HtmlBlock {
             $type = $util->contains($kwargs,'type')->getString();
             $this->setType($type);
 
-            $button = $util->contains($kwargs,'button')->getString();
+            $button = $util->contains($kwargs,'button')->getArray();
             $this->setButton($button);
 
             $title = $util->contains($kwargs,'title')->getString();
@@ -887,6 +887,7 @@ namespace Component\HtmlBlock {
 
         private function modelPersist() {
             $model = $this->getModel();
+            $model = $model[0];
 
             $request = new Request();
             $util = new util();
@@ -913,8 +914,12 @@ namespace Component\HtmlBlock {
         private function ready() {
             $dom_document = $this->getDomDocument();
             $dom_element = $this->getDomElement();
+
             $this->modelPersist();
+
             $model = $this->getModel();
+            $model = $model[0];
+
             $element_id = $this->getId();
             $type = $this->getType();
 
