@@ -34,49 +34,51 @@ namespace Component\HtmlBlock {
                 $kwargs = $kwargs[0];
             }
 
-            $encoding = Util::get($kwargs,'encoding','UTF-8');
+            $util = new Util;
+
+            $encoding = $util->contains($kwargs,'encoding')->getString('UTF-8');
             $this->setEncoding($encoding);
 
-            $model = Util::get($kwargs,'model',null);
+            $model = $util->contains($kwargs,'model')->getArray();
             $this->setModel($model);
 
-            $column = Util::get($kwargs,'column',null);
+            $column = $util->contains($kwargs,'column')->getArray();
             $this->setColumn($column);
 
-            $pagination = Util::get($kwargs,'pagination',null);
+            $pagination = $util->contains($kwargs,'pagination')->getArray();
             $this->setPagination($pagination);
 
-            $button = Util::get($kwargs,'button',null);
+            $button = $util->contains($kwargs,'button')->getArray();
             $this->setButton($button);
 
-            $button_inline = Util::get($kwargs,'button_inline',null);
+            $button_inline = $util->contains($kwargs,'button_inline')->getArray();
             $this->setButtonInline($button_inline);
 
-            $button_extra = Util::get($kwargs,'button_extra',null);
+            $button_extra = $util->contains($kwargs,'button_extra')->getArray();
             $this->setButtonExtra($button_extra);
 
-            $button_search = Util::get($kwargs,'button_search',null);
+            $button_search = $util->contains($kwargs,'button_search')->getArray();
             $this->setButtonSearch($button_search);
 
-            $title = Util::get($kwargs,'title',null);
+            $title = $util->contains($kwargs,'title')->getString();
             $this->setTitle($title);
 
-            $title_empty = Util::get($kwargs,'title_empty',null);
+            $title_empty = $util->contains($kwargs,'title_empty')->getString();
             $this->setTitleEmpty($title_empty);
 
-            $text = Util::get($kwargs,'text',null);
+            $text = $util->contains($kwargs,'text')->getString();
             $this->setText($text);
 
-            $text_empty = Util::get($kwargs,'text_empty',null);
+            $text_empty = $util->contains($kwargs,'text_empty')->getString();
             $this->setTextEmpty($text_empty);
 
-            $footer = Util::get($kwargs,'footer',null);
+            $footer = $util->contains($kwargs,'footer')->getString();
             $this->setFooter($footer);
 
-            $container_class = Util::get($kwargs,'container_class',null);
+            $container_class = $util->contains($kwargs,'container_class')->getString();
             $this->setContainerClass($container_class);
 
-            $container_style = Util::get($kwargs,'container_style',null);
+            $container_style = $util->contains($kwargs,'container_style')->getString();
             $this->setContainerStyle($container_style);
 
             $dom_document = new DOMDocument(null,$encoding);
@@ -305,6 +307,7 @@ namespace Component\HtmlBlock {
                 return false;
             }
 
+            $util = new Util;
             $request = new Request;
 
             if (!empty($button)) {
@@ -314,15 +317,15 @@ namespace Component\HtmlBlock {
                 $div_button_group->setAttribute('aria-label','');
 
                 foreach ($button as $data) {
-                    $href = Util::get($data,'href',null);
+                    $href = $util->contains($data,'href')->getString();
 
-                    $a_div_button_group = $dom_document->createElement('a',Util::get($data,'label',null));
+                    $a_div_button_group = $dom_document->createElement('a',$util->contains($data,'label')->getString());
                     $a_div_button_group->setAttribute('href',$href);
-                    $a_div_button_group->setAttribute('id',Util::get($data,'href',null));
+                    $a_div_button_group->setAttribute('id',$util->contains($data,'href')->getString());
                     $a_div_button_group->setAttribute('role','button');
-                    $a_div_button_group->setAttribute('class',Util::get($data,'class','btn btn-default btn-xs'));
+                    $a_div_button_group->setAttribute('class',$util->contains($data,'class')->getString('btn btn-default btn-xs'));
 
-                    $alt = Util::get($data,'alt',null);
+                    $alt = $util->contains($data,'alt')->getString();
 
                     if (!empty($alt)) {
                         $a_div_button_group->setAttribute('data-toggle','tooltip');
@@ -334,7 +337,7 @@ namespace Component\HtmlBlock {
                         $a_div_button_group->setAttribute('data-container','body');
                     }
 
-                    $icon = Util::get($data,'icon',null);
+                    $icon = $util->contains($data,'icon')->getString();
 
                     if (!empty($icon)) {
                         $span_button_div_button_group = $dom_document->createElement('span');
@@ -355,13 +358,13 @@ namespace Component\HtmlBlock {
                 $div_button_extra_group->setAttribute('aria-label','');
 
                 foreach ($button_extra as $data) {
-                    $a_div_button_extra_group = $dom_document->createElement('a',Util::get($data,'label',null));
-                    $a_div_button_extra_group->setAttribute('href',Util::get($data,'href',null));
-                    $a_div_button_extra_group->setAttribute('id',Util::get($data,'id',null));
+                    $a_div_button_extra_group = $dom_document->createElement('a',$util->contains($data,'label')->getString());
+                    $a_div_button_extra_group->setAttribute('href',$util->contains($data,'href')->getString());
+                    $a_div_button_extra_group->setAttribute('id',$util->contains($data,'id')->getString());
                     $a_div_button_extra_group->setAttribute('role','button');
-                    $a_div_button_extra_group->setAttribute('class',Util::get($data,'class','btn btn-default btn-xs'));
+                    $a_div_button_extra_group->setAttribute('class',$util->contains($data,'class')->getString('btn btn-default btn-xs'));
 
-                    $alt = Util::get($data,'alt',null);
+                    $alt = $util->contains($data,'alt')->getString();
 
                     if (!empty($alt)) {
                         $a_div_button_extra_group->setAttribute('data-toggle','tooltip');
@@ -370,7 +373,7 @@ namespace Component\HtmlBlock {
                         $a_div_button_extra_group->setAttribute('alt',$alt);
                     }
 
-                    $icon = Util::get($data,'icon',null);
+                    $icon = $util->contains($data,'icon')->getString();
 
                     if (!empty($icon)) {
                         $span_button_extra_div_button_group = $dom_document->createElement('span');
@@ -429,7 +432,9 @@ namespace Component\HtmlBlock {
             $object_schema = $object->schema();
             $flag_label = null;
 
+            $util = new Util;
             $request = new Request;
+
             $request_http_get = $request->getHttpGet();
 
             foreach ($object_column as $key => $column_value) {
@@ -456,7 +461,7 @@ namespace Component\HtmlBlock {
 
                         $input = $dom_document->createElement('input');
                         $input->setAttribute('name',$field_name);
-                        $input->setAttribute('value',Util::get($request_http_get,$field_name,null));
+                        $input->setAttribute('value',$util->contains($request_http_get,$field_name)->getString());
                         $input->setAttribute('id',vsprintf('%s-search-%s-%s',[$element_id,$object_table_name,$column_value]));
                         $input->setAttribute('class','form-control input-sm table-search-input');
                         $input->setAttribute('type','text');
@@ -496,7 +501,9 @@ namespace Component\HtmlBlock {
                 return false;
             }
 
+            $util = new Util;
             $request = new Request;
+
             $request_http_get = $request->getHttpGet();
 
             $data = $model->data[0];
@@ -539,7 +546,7 @@ namespace Component\HtmlBlock {
                             $field->setAttribute('multiple','multiple');
                         }
 
-                        $field_name_value = Util::get($request_http_get,$field_name,null);
+                        $field_name_value = $util->contains($request_http_get,$field_name)->getString();
 
                         if (!empty($data_schema[$column_value]->rule['option'])) {
                             foreach ($data_schema[$column_value]->rule['option'] as $key => $value) {
@@ -557,7 +564,7 @@ namespace Component\HtmlBlock {
                     } else {
                         $field = $dom_document->createElement('input');
                         $field->setAttribute('name',$field_name);
-                        $field->setAttribute('value',Util::get($request_http_get,$field_name,null));
+                        $field->setAttribute('value',$util->contains($request_http_get,$field_name)->getString());
                         $field->setAttribute('id',vsprintf('%s-search-%s-%s',[$element_id,$data_table_name,$column_value]));
                         $field->setAttribute('class','form-control input-sm table-search-input');
                         $field->setAttribute('type','text');
@@ -571,9 +578,9 @@ namespace Component\HtmlBlock {
             }
 
             $button = $dom_document->createElement('button');
-            $button->setAttribute('name',Util::get($button_search,'name',null));
+            $button->setAttribute('name',$util->contains($button_search,'name')->getString());
             
-            $button_search_alt = Util::get($button_search,'alt',null);
+            $button_search_alt = $util->contains($button_search,'alt')->getString();
 
             $button->setAttribute('alt',$button_search_alt);
 
@@ -585,9 +592,9 @@ namespace Component\HtmlBlock {
             }
 
             $button->setAttribute('value','1');
-            $button->setAttribute('id',Util::get($button_search,'id',null));
+            $button->setAttribute('id',$util->contains($button_search,'id')->getString());
 
-            $button_search_class = Util::get($button_search,'class',null);
+            $button_search_class = $util->contains($button_search,'class')->getString();
 
             if (empty($button_search_class)) {
                 $button_search_class = 'btn btn-default btn-sm table-search-button';
@@ -596,17 +603,17 @@ namespace Component\HtmlBlock {
             $button->setAttribute('class',$button_search_class);
             $button->setAttribute('type','submit');
             
-            $button_search_icon = Util::get($button_search,'icon',null);
+            $button_search_icon = $util->contains($button_search,'icon')->getString();
             
             if (!empty($button_search_icon)) {
                 $span_button = $dom_document->createElement('span');
-                $span_button->setAttribute('class',Util::get($button_search,'icon','glyphicon glyphicon-search'));
+                $span_button->setAttribute('class',$util->contains($button_search,'icon')->getString('glyphicon glyphicon-search'));
                 $span_button->setAttribute('aria-hidden','true');
 
                 $button->appendChild($span_button);
             }
 
-            $button_search_label = Util::get($button_search,'label',null);
+            $button_search_label = $util->contains($button_search,'label')->getString();
 
             if (!empty($button_search_label)) {
                 $button->appendChild(new \DOMText($button_search_label));
@@ -679,6 +686,7 @@ namespace Component\HtmlBlock {
             $table = $dom_document->createElement('table');
             $table_tr = $dom_document->createElement('tr');
 
+            $util = new Util;
             $request = new Request;
 
             foreach ($button_inline as $data) {
@@ -689,13 +697,13 @@ namespace Component\HtmlBlock {
 
                 }
 
-                $a_div_td_tr_tbody = $dom_document->createElement('a',Util::get($data,'label',null));
+                $a_div_td_tr_tbody = $dom_document->createElement('a',$util->contains($data,'label')->getString());
                 $a_div_td_tr_tbody->setAttribute('href',$href);
-                $a_div_td_tr_tbody->setAttribute('id',Util::get($data,'id',null));
+                $a_div_td_tr_tbody->setAttribute('id',$util->contains($data,'id')->getString());
                 $a_div_td_tr_tbody->setAttribute('role','button');
-                $a_div_td_tr_tbody->setAttribute('class',Util::get($data,'class','btn btn-default btn-xs'));
+                $a_div_td_tr_tbody->setAttribute('class',$util->contains($data,'class')->getString('btn btn-default btn-xs'));
 
-                $alt = Util::get($data,'alt',null);
+                $alt = $util->contains($data,'alt')->getString();
 
                 if (!empty($alt)) {
                     $a_div_td_tr_tbody->setAttribute('title',$alt);
@@ -705,7 +713,7 @@ namespace Component\HtmlBlock {
                     $a_div_td_tr_tbody->setAttribute('data-container','body');
                 }
 
-                $icon = Util::get($data,'icon',null);
+                $icon = $util->contains($data,'icon')->getString();
 
                 if (!empty($icon)) {
                     $span_button_div_td_tr_tbody = $dom_document->createElement('span');
@@ -847,6 +855,8 @@ namespace Component\HtmlBlock {
             $model = $this->getModel();
             $pagination = $this->getPagination();
 
+            $util = new Util;
+
             if (isset($model->page_total) && $model->register_total > $model->register_perpage) {
                 $node_panel_body = $this->getNodePanelBody();
                 $node_container = $this->getNodeContainer();
@@ -859,13 +869,13 @@ namespace Component\HtmlBlock {
                 if ($model->page_previous > 1) {
                     $li_ul_nav_pagination = $dom_document->createElement('li');
                     $a_li_ul_nav_pagination = $dom_document->createElement('a');
-                    $a_li_ul_nav_pagination->setAttribute('href',vsprintf('?%s=1',[Util::get($pagination,'btn_url_string',''),]));
-                    $a_li_ul_nav_pagination->setAttribute('class',vsprintf('%s',[Util::get($pagination,'class',''),]));
+                    $a_li_ul_nav_pagination->setAttribute('href',vsprintf('?%s=1',[$util->contains($pagination,'btn_url_string')->getString(),]));
+                    $a_li_ul_nav_pagination->setAttribute('class',vsprintf('%s',[$util->contains($pagination,'class')->getString(),]));
                     $a_li_ul_nav_pagination->setAttribute('data-page','1');
                     $span_a_li_ul_nav_pagination = $dom_document->createElement('span');
                     $span_a_li_ul_nav_pagination->setAttribute('class','glyphicon glyphicon-chevron-left');
-                    $span_a_li_ul_nav_pagination->setAttribute('alt',Util::get($pagination,'left_alt',null));
-                    $span_a_li_ul_nav_pagination->setAttribute('title',Util::get($pagination,'left_alt',null));
+                    $span_a_li_ul_nav_pagination->setAttribute('alt',$util->contains($pagination,'left_alt')->getString());
+                    $span_a_li_ul_nav_pagination->setAttribute('title',$util->contains($pagination,'left_alt')->getString());
                     $span_a_li_ul_nav_pagination->setAttribute('aria-hidden','true');
 
                     $a_li_ul_nav_pagination->appendChild($span_a_li_ul_nav_pagination);
@@ -877,8 +887,8 @@ namespace Component\HtmlBlock {
                 if ($model->page_previous < $model->page_current) {
                     $li_ul_nav_pagination = $dom_document->createElement('li');
                     $a_li_ul_nav_pagination = $dom_document->createElement('a');
-                    $a_li_ul_nav_pagination->setAttribute('href',vsprintf('?%s=%s',[Util::get($pagination,'btn_url_string',''),$model->page_previous,]));
-                    $a_li_ul_nav_pagination->setAttribute('class',vsprintf('%s',[Util::get($pagination,'class',''),]));
+                    $a_li_ul_nav_pagination->setAttribute('href',vsprintf('?%s=%s',[$util->contains($pagination,'btn_url_string')->getString(),$model->page_previous,]));
+                    $a_li_ul_nav_pagination->setAttribute('class',vsprintf('%s',[$util->contains($pagination,'class')->getString(),]));
                     $a_li_ul_nav_pagination->setAttribute('data-page',$model->page_previous);
                     $span_a_li_ul_nav_pagination = $dom_document->createElement('span',$model->page_previous);
                     $span_a_li_ul_nav_pagination->setAttribute('aria-hidden','true');
@@ -902,8 +912,8 @@ namespace Component\HtmlBlock {
                 if ($model->page_next < $model->page_total) {
                     $li_ul_nav_pagination = $dom_document->createElement('li');
                     $a_li_ul_nav_pagination = $dom_document->createElement('a');
-                    $a_li_ul_nav_pagination->setAttribute('href',vsprintf('?%s=%s',[Util::get($pagination,'btn_url_string',''),$model->page_next]));
-                    $a_li_ul_nav_pagination->setAttribute('class',vsprintf('%s',[Util::get($pagination,'class',''),]));
+                    $a_li_ul_nav_pagination->setAttribute('href',vsprintf('?%s=%s',[$util->contains($pagination,'btn_url_string')->getString(),$model->page_next]));
+                    $a_li_ul_nav_pagination->setAttribute('class',vsprintf('%s',[$util->contains($pagination,'class')->getString(),]));
                     $a_li_ul_nav_pagination->setAttribute('data-page',$model->page_next);
                     $span_a_li_ul_nav_pagination = $dom_document->createElement('span',$model->page_next);
                     $span_a_li_ul_nav_pagination->setAttribute('aria-hidden','true');
@@ -917,13 +927,13 @@ namespace Component\HtmlBlock {
                 if ($model->page_total > $model->page_current) {
                     $li_ul_nav_pagination = $dom_document->createElement('li');
                     $a_li_ul_nav_pagination = $dom_document->createElement('a');
-                    $a_li_ul_nav_pagination->setAttribute('href',vsprintf('?%s=%s',[Util::get($pagination,'btn_url_string',''),$model->page_total]));
-                    $a_li_ul_nav_pagination->setAttribute('class',vsprintf('%s',[Util::get($pagination,'class',''),]));
+                    $a_li_ul_nav_pagination->setAttribute('href',vsprintf('?%s=%s',[$util->contains($pagination,'btn_url_string')->getString(),$model->page_total]));
+                    $a_li_ul_nav_pagination->setAttribute('class',vsprintf('%s',[$util->contains($pagination,'class')->getString(),]));
                     $a_li_ul_nav_pagination->setAttribute('data-page',$model->page_total);
                     $span_a_li_ul_nav_pagination = $dom_document->createElement('span');
                     $span_a_li_ul_nav_pagination->setAttribute('class','glyphicon glyphicon-chevron-right');
-                    $span_a_li_ul_nav_pagination->setAttribute('alt',Util::get($pagination,'right_alt',null));
-                    $span_a_li_ul_nav_pagination->setAttribute('title',Util::get($pagination,'right_alt',null));
+                    $span_a_li_ul_nav_pagination->setAttribute('alt',$util->contains($pagination,'right_alt')->getString());
+                    $span_a_li_ul_nav_pagination->setAttribute('title',$util->contains($pagination,'right_alt')->getString());
                     $span_a_li_ul_nav_pagination->setAttribute('aria-hidden','true');
 
                     $a_li_ul_nav_pagination->appendChild($span_a_li_ul_nav_pagination);

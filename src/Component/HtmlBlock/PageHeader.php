@@ -18,19 +18,21 @@ namespace Component\HtmlBlock {
                 $kwargs = $kwargs[0];
             }
 
-            $encoding = Util::get($kwargs,'encoding','UTF-8');
+            $util = new Util;
+
+            $encoding = $util->contains($kwargs,'encoding')->getString('UTF-8');
             $this->setEncoding($encoding);
 
-            $container_class = Util::get($kwargs,'container_class',null);
+            $container_class = $util->contains($kwargs,'container_class')->getString();
             $this->setContainerClass($container_class);
 
-            $title = Util::get($kwargs,'title',null);
+            $title = $util->contains($kwargs,'title')->getString();
             $this->setTitle($title);
 
-            $small_title = Util::get($kwargs,'small_title',null);
+            $small_title = $util->contains($kwargs,'small_title')->getString();
             $this->setSmallTitle($small_title);
 
-            $container_style = Util::get($kwargs,'container_style',null);
+            $container_style = $util->contains($kwargs,'container_style')->getString();
             $this->setContainerStyle($container_style);
 
             $dom_document = new DOMDocument(null,$encoding);

@@ -20,22 +20,24 @@ namespace Component\HtmlBlock {
                 $kwargs = $kwargs[0];
             }
 
-            $model = Util::get($kwargs,'model',null);
+            $util = new Util;
+
+            $model = $util->contains($kwargs,'model')->getArray();
             $this->setModel($model);
 
-            $title = Util::get($kwargs,'title',null);
+            $title = $util->contains($kwargs,'title')->getString();
             $this->setTitle($title);
 
-            $text = Util::get($kwargs,'text',null);
+            $text = $util->contains($kwargs,'text')->getString();
             $this->setText($text);
 
-            $footer = Util::get($kwargs,'footer',null);
+            $footer = $util->contains($kwargs,'footer')->getString();
             $this->setFooter($footer);
 
-            $container_class = Util::get($kwargs,'container_class',null);
+            $container_class = $util->contains($kwargs,'container_class')->getString();
             $this->setContainerClass($container_class);
  
-            $container_style = Util::get($kwargs,'container_style',null);
+            $container_style = $util->contains($kwargs,'container_style')->getString();
             $this->setContainerStyle($container_style);
 
             $dom_document = new DOMDocument(null,$encoding);

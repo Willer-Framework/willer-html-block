@@ -1,7 +1,7 @@
 <?php
 
 namespace Component\HtmlBlock {
-    use Core\{Util,WUtil,Request};
+    use Core\{Util,Request};
     use Core\DAO\Transaction;
     use Core\Exception\WException;
     use \DOMDocument as DOMDocument;
@@ -24,31 +24,33 @@ namespace Component\HtmlBlock {
                 $kwargs = $kwargs[0];
             }
 
-            $encoding = Util::get($kwargs,'encoding','UTF-8');
+            $util = new Util;
+
+            $encoding = $util->contains($kwargs,'encoding')->getString('UTF-8');
             $this->setEncoding($encoding);
 
-            $model = Util::get($kwargs,'model',null);
+            $model = $util->contains($kwargs,'model')->getArray();
             $this->setModel($model);
 
-            $type = Util::get($kwargs,'type',null);
+            $type = $util->contains($kwargs,'type')->getString();
             $this->setType($type);
 
-            $button = Util::get($kwargs,'button',null);
+            $button = $util->contains($kwargs,'button')->getString();
             $this->setButton($button);
 
-            $title = Util::get($kwargs,'title',null);
+            $title = $util->contains($kwargs,'title')->getString();
             $this->setTitle($title);
 
-            $text = Util::get($kwargs,'text',null);
+            $text = $util->contains($kwargs,'text')->getString();
             $this->setText($text);
 
-            $footer = Util::get($kwargs,'footer',null);
+            $footer = $util->contains($kwargs,'footer')->getString();
             $this->setFooter($footer);
 
-            $container_class = Util::get($kwargs,'container_class',null);
+            $container_class = $util->contains($kwargs,'container_class')->getString();
             $this->setContainerClass($container_class);
 
-            $container_style = Util::get($kwargs,'container_style',null);
+            $container_style = $util->contains($kwargs,'container_style')->getString();
             $this->setContainerStyle($container_style);
 
             $dom_document = new DOMDocument(null,$encoding);
@@ -887,11 +889,11 @@ namespace Component\HtmlBlock {
             $model = $this->getModel();
 
             $request = new Request();
-            $wutil = new WUtil();
+            $util = new util();
 
             $dom_document_form = $request->getHttpSession();
 
-            $html_block_form = $wutil->contains($request->getHttpSession(),'html_block_form')->getArray();
+            $html_block_form = $util->contains($request->getHttpSession(),'html_block_form')->getArray();
 
             if (!empty($html_block_form)) {
                 foreach ($html_block_form as $field_key => $field_value) {

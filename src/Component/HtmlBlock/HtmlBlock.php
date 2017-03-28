@@ -22,10 +22,12 @@ namespace Component\HtmlBlock {
                 $kwargs = $kwargs[0];
             }
 
-            $encoding = Util::get($kwargs,'encoding','UTF-8');
+            $util = new Util;
+
+            $encoding = $util->contains($kwargs,'encoding')->getString('UTF-8');
             $this->setEncoding($encoding);
 
-            $doc_type = Util::get($kwargs,'doc_type','<!DOCTYPE html>');
+            $doc_type = $util->contains($kwargs,'doc_type')->getString('<!DOCTYPE html>');
             $this->setDocType($doc_type);
 
             $dom_document = new DOMDocument(null,$encoding);

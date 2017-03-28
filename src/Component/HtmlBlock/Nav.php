@@ -22,31 +22,33 @@ namespace Component\HtmlBlock {
                 $kwargs = $kwargs[0];
             }
 
-            $encoding = Util::get($kwargs,'encoding','UTF-8');
+            $util = new Util;
+
+            $encoding = $util->contains($kwargs,'encoding')->getString('UTF-8');
             $this->setEncoding($encoding);
 
-            $model = Util::get($kwargs,'model',null);
+            $model = $util->contains($kwargs,'model')->getArray();
             $this->setModel($model);
 
-            $navbar_direction = Util::get($kwargs,'navbar_direction',null);
+            $navbar_direction = $util->contains($kwargs,'navbar_direction')->getString();
             $this->setNavBarDirection($navbar_direction);
 
-            $title = Util::get($kwargs,'title',null);
+            $title = $util->contains($kwargs,'title')->getString();
             $this->setTitle($title);
 
-            $title_small = Util::get($kwargs,'title_small',null);
+            $title_small = $util->contains($kwargs,'title_small')->getString();
             $this->setTitleSmall($title_small);
 
-            $title_url = Util::get($kwargs,'title_url',null);
+            $title_url = $util->contains($kwargs,'title_url')->getString();
             $this->setTitleUrl($title_url);
 
-            $title_img = Util::get($kwargs,'title_img',null);
+            $title_img = $util->contains($kwargs,'title_img')->getString();
             $this->setTitleImg($title_img);
 
-            $container_class = Util::get($kwargs,'container_class',null);
+            $container_class = $util->contains($kwargs,'container_class')->getString();
             $this->setContainerClass($container_class);
 
-            $container_style = Util::get($kwargs,'container_style',null);
+            $container_style = $util->contains($kwargs,'container_style')->getString();
             $this->setContainerStyle($container_style);
 
             $dom_document = new DOMDocument(null,$encoding);

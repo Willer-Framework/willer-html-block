@@ -17,16 +17,18 @@ namespace Component\HtmlBlock {
                 $kwargs = $kwargs[0];
             }
 
-            $encoding = Util::get($kwargs,'encoding','UTF-8');
+            $util = new Util;
+
+            $encoding = $util->contains($kwargs,'encoding')->getString('UTF-8');
             $this->setEncoding($encoding);
 
-            $model = Util::get($kwargs,'model',null);
+            $model = $util->contains($kwargs,'model')->getArray();
             $this->setModel($model);
 
-            $container_class = Util::get($kwargs,'container_class',null);
+            $container_class = $util->contains($kwargs,'container_class')->getString();
             $this->setContainerClass($container_class);
  
-            $container_style = Util::get($kwargs,'container_style',null);
+            $container_style = $util->contains($kwargs,'container_style')->getString();
             $this->setContainerStyle($container_style);
 
             $dom_document = new DOMDocument(null,$encoding);
@@ -123,6 +125,8 @@ namespace Component\HtmlBlock {
         }
 
         private function ready() {
+            $util = new Util;
+
             $dom_document = $this->getDomDocument();
             $dom_element = $this->getDomElement();
             $model = $this->getModel();
@@ -134,8 +138,8 @@ namespace Component\HtmlBlock {
             }
 
             foreach ($model as $model_item) {
-                $message = Util::get($model_item,'message','');
-                $type = Util::get($model_item,'type',null);
+                $message = $util->contains($model_item,'message')->getString();
+                $type = $util->contains($model_item,'type')->getString();
 
                 $button = $dom_document->createElement('button');
                 $button->setAttribute('type','button');
@@ -163,8 +167,13 @@ namespace Component\HtmlBlock {
 
         public function renderHtml() {
             $dom_document = $this->getDomDocument();
+            $dom_element = $this->getDomElement();
 
-            return $dom_document->saveHTML();
+            if (!empty($dom_element)) {
+                $node = $dom_document->importNode($dom_element,true);
+            }
+
+            return $node->saveHTML();
         }
     }
 }
