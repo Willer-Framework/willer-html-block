@@ -12,7 +12,8 @@ namespace Component\HtmlBlock {
         private $node_head;
         private $node_head_title;
         private $node_body;
-        private $node_body_div_container_row;
+        private $node_body_div_container_row_top;
+        private $node_body_div_container_row_main;
         private $node_body_div_container;
         private $encoding;
         private $doc_type;
@@ -138,12 +139,20 @@ namespace Component\HtmlBlock {
             $this->node_body_div_container = $node_body_div_container;
         }
 
-        public function getNodeBodyDivContainerRow() {
-            return $this->node_body_div_container_row;
+        public function getNodeBodyDivContainerRowTop() {
+            return $this->node_body_div_container_row_top;
         }
 
-        public function setNodeBodyDivContainerRow($node_body_div_container_row) {
-            $this->node_body_div_container_row = $node_body_div_container_row;
+        public function setNodeBodyDivContainerRowTop($node_body_div_container_row_top) {
+            $this->node_body_div_container_row_top = $node_body_div_container_row_top;
+        }
+
+        public function getNodeBodyDivContainerRowMain() {
+            return $this->node_body_div_container_row_main;
+        }
+
+        public function setNodeBodyDivContainerRowMain($node_body_div_container_row_main) {
+            $this->node_body_div_container_row_main = $node_body_div_container_row_main;
         }
 
         public function createHtmlElement() {
@@ -168,17 +177,23 @@ namespace Component\HtmlBlock {
             $node_document = $dom_document->appendChild($dom_html);
             $this->setNodeDocument($node_document);
 
-            $dom_div_row = $this->createDom('div');
-            $dom_div_row->setAttribute('class','row');
-
             $dom_div_container_fluid = $this->createDom('div');
             $dom_div_container_fluid->setAttribute('class','container-fluid');
 
-            $node_body_div_container_row = $dom_div_container_fluid->appendChild($dom_div_row);
-            $this->setNodeBodyDivContainerRow($node_body_div_container_row);
-
             $node_body_div_container = $node_body->appendChild($dom_div_container_fluid);
             $this->setNodeBodyDivContainer($node_body_div_container);
+
+            $dom_div_row = $this->createDom('div');
+            $dom_div_row->setAttribute('class','row');
+
+            $node_body_div_container_row_top = $dom_div_container_fluid->appendChild($dom_div_row);
+            $this->setNodeBodyDivContainerRowTop($node_body_div_container_row_top);
+
+            $dom_div_row = $this->createDom('div');
+            $dom_div_row->setAttribute('class','row');
+
+            $node_body_div_container_row_main = $dom_div_container_fluid->appendChild($dom_div_row);
+            $this->setNodeBodyDivContainerRowMain($node_body_div_container_row_main);
 
             return $this;
         }
@@ -225,31 +240,31 @@ namespace Component\HtmlBlock {
             return $dom;
         }
 
-        public function appendBody($dom_node) {
+        public function appendBodyTop($dom_node) {
             $dom_document = $this->getDomDocument();
 
             $node_import = $dom_document->importNode($dom_node->getDomElement(),true);
 
-            $node_body_div_container = $this->getNodeBodyDivContainer();
-            $node_body_div_container->appendChild($node_import);
+            $node_body_div_container_row_top = $this->getNodeBodyDivContainerRowTop();
+            $node_body_div_container_row_top->appendChild($node_import);
 
             return $this;
         }
 
-        public function appendBodyRow($dom_node_list) {
+        public function appendBodyMain($dom_node_list) {
             $dom_document = $this->getDomDocument();
 
             if (!is_array($dom_node_list)) {
                 throw new WException(vsprintf('Expected array, given %s',[gettype($dom_node_list)]));
             }
 
-            $node_body_div_container_row = $this->getNodeBodyDivContainerRow();
+            $node_body_div_container_row_main = $this->getNodeBodyDivContainerRowMain();
 
             foreach ($dom_node_list as $dom_node) {
                 if (!empty($dom_node) && !empty($dom_node->getDomElement())) {
                     $node = $dom_document->importNode($dom_node->getDomElement(),true);
 
-                    $node_body_div_container_row->appendChild($node);
+                    $node_body_div_container_row_main->appendChild($node);
                 }
             }
 

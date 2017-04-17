@@ -40,6 +40,7 @@ namespace Component\HtmlBlock {
             $this->setEncoding($encoding);
 
             $model = $util->contains($kwargs,'model')->getArray();
+            $model = $model[0];
             $this->setModel($model);
 
             $column = $util->contains($kwargs,'column')->getArray();
@@ -297,6 +298,7 @@ namespace Component\HtmlBlock {
 
         private function addButton() {
             $model = $this->getModel();
+
             $dom_document = $this->getDomDocument();
             $dom_element = $this->getDomElement();
             $element_id = $this->getId();
@@ -492,10 +494,11 @@ namespace Component\HtmlBlock {
         private function addSearch() {
             $dom_document = $this->getDomDocument();
             $model = $this->getModel();
+
             $node_table_thead = $this->getNodeTableThead();
+            $button_search = $this->getButtonSearch();
             $column = $this->getColumn();
             $element_id = $this->getId();
-            $button_search = $this->getButtonSearch();
 
             if (empty($model->data)) {
                 return false;
@@ -507,9 +510,6 @@ namespace Component\HtmlBlock {
             $request_http_get = $request->getHttpGet();
 
             $data = $model->data[0];
-
-            $table_thead_form = $dom_document->createElement('form');
-            $table_thead_form->setAttribute('method','GET');
 
             $table_thead_tr_element = $dom_document->createElement('tr');
 
@@ -622,15 +622,15 @@ namespace Component\HtmlBlock {
             $table_thead_tr_th_element = $dom_document->createElement('th');
             $table_thead_tr_th_element->appendChild($button);
             $table_thead_tr_element->appendChild($table_thead_tr_th_element);
-            $table_thead_form->appendChild($table_thead_tr_element);
 
-            $node_table_thead->appendChild($table_thead_form);
+            $node_table_thead->appendChild($table_thead_tr_element);
         }
 
         private function addThead() {
             $dom_document = $this->getDomDocument();
             $dom_element = $this->getDomElement();
             $model = $this->getModel();
+
             $column = $this->getColumn();
 
             $table_thead_element = $dom_document->createElement('thead');
@@ -742,6 +742,7 @@ namespace Component\HtmlBlock {
             $dom_document = $this->getDomDocument();
             $dom_element = $this->getDomElement();
             $model = $this->getModel();
+
             $column = $this->getColumn();
 
             $table_tbody_element = $dom_document->createElement('tbody');
@@ -809,50 +810,10 @@ namespace Component\HtmlBlock {
             }
         }
 
-        private function addPanel() {
-            $dom_document = $this->getDomDocument();
-            $dom_element = $this->getDomElement();
-            $title = $this->getTitle();
-            $text = $this->getText();
-            $footer = $this->getFooter();
-
-            if (empty($title) && empty($text) && empty($footer)) {
-                return false;
-            }
-
-            $div_class_panel = $dom_document->createElement('div');
-            $div_class_panel->setAttribute('class','panel panel-default');
-
-            if (!empty($title)) {
-                $div_class_panel_head = $dom_document->createElement('div',$title);
-                $div_class_panel_head->setAttribute('class','panel-heading');
-                $node_div_panel_head = $div_class_panel->appendChild($div_class_panel_head);
-            }
-
-            $div_class_panel_body = $dom_document->createElement('div');
-
-            if (!empty($text)) {
-                $p_text = $dom_document->createElement('p',$text);
-                $div_class_panel_body->appendChild($p_text);
-            }
-
-            $div_class_panel_body->setAttribute('class','panel-body');
-            $node_div_panel_body = $div_class_panel->appendChild($div_class_panel_body);
-            $node_div_panel_body->appendChild($dom_element);
-            $this->setNodePanelBody($node_div_panel_body);
-
-            if (!empty($footer)) {
-                $div_class_panel_footer = $dom_document->createElement('div',$footer);
-                $div_class_panel_footer->setAttribute('class','panel-footer');
-                $node_div_panel_footer = $div_class_panel->appendChild($div_class_panel_footer);
-            }
-
-            $this->setDomElement($div_class_panel);
-        }
-
         private function addPagination() {
             $dom_document = $this->getDomDocument();
             $model = $this->getModel();
+
             $pagination = $this->getPagination();
 
             $util = new Util;
@@ -962,6 +923,64 @@ namespace Component\HtmlBlock {
             $this->setNodeTableTfoot($node_table_tfoot);
         }
 
+        private function addForm() {
+            $dom_document = $this->getDomDocument();
+            $dom_element = $this->getDomElement();
+            $button_search = $this->getButtonSearch();
+
+            $util = new Util;
+
+            $button_search_href = $util->contains($button_search,'href')->getString();
+
+            $form = $dom_document->createElement('form');
+            $form->setAttribute('method','GET');
+            $form->setAttribute('action',$button_search_href);
+            $form->appendChild($dom_element);
+
+            $this->setDomElement($form);
+        }
+
+        private function addPanel() {
+            $dom_document = $this->getDomDocument();
+            $dom_element = $this->getDomElement();
+            $title = $this->getTitle();
+            $text = $this->getText();
+            $footer = $this->getFooter();
+
+            if (empty($title) && empty($text) && empty($footer)) {
+                return false;
+            }
+
+            $div_class_panel = $dom_document->createElement('div');
+            $div_class_panel->setAttribute('class','panel panel-default');
+
+            if (!empty($title)) {
+                $div_class_panel_head = $dom_document->createElement('div',$title);
+                $div_class_panel_head->setAttribute('class','panel-heading');
+                $node_div_panel_head = $div_class_panel->appendChild($div_class_panel_head);
+            }
+
+            $div_class_panel_body = $dom_document->createElement('div');
+
+            if (!empty($text)) {
+                $p_text = $dom_document->createElement('p',$text);
+                $div_class_panel_body->appendChild($p_text);
+            }
+
+            $div_class_panel_body->setAttribute('class','panel-body');
+            $node_div_panel_body = $div_class_panel->appendChild($div_class_panel_body);
+            $node_div_panel_body->appendChild($dom_element);
+            $this->setNodePanelBody($node_div_panel_body);
+
+            if (!empty($footer)) {
+                $div_class_panel_footer = $dom_document->createElement('div',$footer);
+                $div_class_panel_footer->setAttribute('class','panel-footer');
+                $node_div_panel_footer = $div_class_panel->appendChild($div_class_panel_footer);
+            }
+
+            $this->setDomElement($div_class_panel);
+        }
+
         private function addContainer() {
             $dom_document = $this->getDomDocument();
             $dom_element = $this->getDomElement();
@@ -983,7 +1002,7 @@ namespace Component\HtmlBlock {
             $dom_element = $this->getDomElement();
             $model = $this->getModel();
 
-            if (empty($model) || !is_object($model) || !isset($model->data) || empty($model->data)) {
+            if (empty($model) || empty($model->data)) {
                 $this->addButton();
                 $this->addEmpty();
                 $this->addPanel();
@@ -997,6 +1016,7 @@ namespace Component\HtmlBlock {
             $this->addSearch();
             $this->addTbody();
             $this->addTfoot();
+            $this->addForm();
             $this->addPanel();
             $this->addContainer();
             $this->addPagination();

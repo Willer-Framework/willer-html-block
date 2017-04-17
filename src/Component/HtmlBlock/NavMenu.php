@@ -48,7 +48,10 @@ namespace Component\HtmlBlock {
 
             $this->setDomDocument($dom_document);
 
-            $dom_element = $dom_document->createElement('nav');
+            $dom_element = $dom_document->createElement('ul');
+            $dom_element->setAttribute('id',$id);
+            $dom_element->setAttribute('class',$class);
+            $dom_element->setAttribute('style',$style);
 
             $this->setDomElement($dom_element);
             $this->ready();
@@ -150,153 +153,93 @@ namespace Component\HtmlBlock {
             $dom_element = $this->getDomElement();
             $model = $this->getModel();
 
-            $div_container_fluid = $dom_document->createElement('div');
-            $div_container_fluid->setAttribute('class','container-fluid');
-
-            $div_header = $dom_document->createElement('div');
-            $div_header->setAttribute('class','navbar-header');
-
-            $div_container_fluid->appendChild($div_header);
-
-            $div_collapse_id = vsprintf('%s-navbar-collapse',[mt_rand()]);
-
-            $div_collapse = $dom_document->createElement('div');
-            $div_collapse->setAttribute('class','navbar-collapse collapse');
-            $div_collapse->setAttribute('id',$div_collapse_id);
-
-            if (!empty($model)) {
-                $button_navbar_toggle_collapsed = $dom_document->createElement('button');
-                $button_navbar_toggle_collapsed->setAttribute('type','button');
-                $button_navbar_toggle_collapsed->setAttribute('class','navbar-toggle collapsed');
-                $button_navbar_toggle_collapsed->setAttribute('data-toggle','collapse');
-                $button_navbar_toggle_collapsed->setAttribute('data-target','#'.$div_collapse_id);
-                $button_navbar_toggle_collapsed->setAttribute('aria-expanded','false');
-
-                $span_sr_only = $dom_document->createElement('span','Toggle navigation');
-                $span_sr_only->setAttribute('class','sr-only');
-
-                $span_icon_bar_1 = $dom_document->createElement('span');
-                $span_icon_bar_1->setAttribute('class','icon-bar');
-
-                $span_icon_bar_2 = $dom_document->createElement('span');
-                $span_icon_bar_2->setAttribute('class','icon-bar');
-
-                $span_icon_bar_3 = $dom_document->createElement('span');
-                $span_icon_bar_3->setAttribute('class','icon-bar');
-
-                $button_navbar_toggle_collapsed->appendChild($span_sr_only);
-                $button_navbar_toggle_collapsed->appendChild($span_icon_bar_1);
-                $button_navbar_toggle_collapsed->appendChild($span_icon_bar_2);
-                $button_navbar_toggle_collapsed->appendChild($span_icon_bar_3);
-
-                $div_header->appendChild($button_navbar_toggle_collapsed);
-
-                $ul_navbar = $dom_document->createElement('ul');
-
-                if (empty($navbar_direction)) {
-                    $ul_navbar->setAttribute('class','nav navbar-nav');
-
-                } else {
-                    $ul_navbar->setAttribute('class',vsprintf('nav navbar-nav %s',[$navbar_direction,]));
-                }
-
-                foreach ($model as $model_data) {
-                    $href = $model_data['href'] ?? null;
-                    $icon = $model_data['icon'] ?? null;
-                    $title = $model_data['title'] ?? null;
-                    $active = $model_data['active'] ?? null;
-                    $model = $model_data['model'] ?? null;
-
-                    $ul_li_navbar = $dom_document->createElement('li');
-
-                    if (!empty($active)) {
-                        $ul_li_navbar->setAttribute('class','active');
-                    }
-
-                    $ul_li_a_navbar = $dom_document->createElement('a');
-
-                    if (!empty($icon)) {
-                        $ul_li_a_span_navbar = $dom_document->createElement('span');
-                        $ul_li_a_span_navbar->setAttribute('class',$icon);
-
-                        $ul_li_a_navbar->appendChild($ul_li_a_span_navbar);
-                    }
-
-                    $ul_li_a_navbar->appendChild(new \DOMText($title));
-
-                    if (empty($model)) {
-                        $ul_li_a_navbar->setAttribute('href',$href);
-
-                        $ul_li_navbar->appendChild($ul_li_a_navbar);
-
-                    } else {
-                        if (!empty($active)) {
-                            $ul_li_navbar->setAttribute('class','dropdown active');
-
-                        } else {
-                            $ul_li_navbar->setAttribute('class','dropdown');
-                        }
-
-                        $ul_li_a_navbar->setAttribute('class','dropdown-toggle');
-                        $ul_li_a_navbar->setAttribute('data-toggle','dropdown');
-                        $ul_li_a_navbar->setAttribute('role','button');
-                        $ul_li_a_navbar->setAttribute('aria-haspopup','true');
-                        $ul_li_a_navbar->setAttribute('aria-expanded','false');
-
-                        $ul_li_a_span_navbar = $dom_document->createElement('span');
-                        $ul_li_a_span_navbar->setAttribute('class','caret');
-
-                        $ul_li_a_navbar->appendChild($ul_li_a_span_navbar);
-
-                        $ul_li_navbar->appendChild($ul_li_a_navbar);
-
-                        $ul_li_ul_navbar = $dom_document->createElement('ul');
-                        $ul_li_ul_navbar->setAttribute('class','dropdown-menu');
-
-                        foreach ($model as $model_data) {
-                            $href = $model_data['href'] ?? null;
-                            $icon = $model_data['icon'] ?? null;
-                            $title = $model_data['title'] ?? null;
-                            $active = $model_data['active'] ?? null;
-
-                            $ul_li_ul_li_navbar = $dom_document->createElement('li');
-
-                            if (!empty($active)) {
-                                $ul_li_ul_li_navbar->setAttribute('class','active');
-                            }
-
-                            $ul_li_ul_li_a_navbar = $dom_document->createElement('a');
-                            $ul_li_ul_li_a_navbar->setAttribute('href',$href);
-
-                            if (!empty($icon)) {
-                                $ul_li_ul_li_a_span_navbar = $dom_document->createElement('span');
-                                $ul_li_ul_li_a_span_navbar->setAttribute('class',$icon);
-
-                                $ul_li_ul_li_a_navbar->appendChild($ul_li_ul_li_a_span_navbar);
-                            }
-
-                            $ul_li_ul_li_a_navbar->appendChild(new \DOMText($title));
-
-                            $ul_li_ul_li_navbar->appendChild($ul_li_ul_li_a_navbar);
-
-                            $ul_li_ul_navbar->appendChild($ul_li_ul_li_navbar);
-                        }
-
-                        $ul_li_navbar->appendChild($ul_li_ul_navbar);
-                    }
-
-                    $ul_navbar->appendChild($ul_li_navbar);
-                }
-
-                $div_collapse->appendChild($ul_navbar);
+            if (empty($model)) {
+                return;
             }
 
-            $div_container_fluid->appendChild($div_collapse);
+            $util = new Util;
 
-            $dom_element->appendChild($div_container_fluid);
+            foreach ($model as $model_data) {
+                $href = $util->contains($model_data,'href')->getString();
+                $title = $util->contains($model_data,'title')->getString();
+                $active = $util->contains($model_data,'active')->getBoolean();
+                $icon = $util->contains($model_data,'icon')->getString();
+                $model = $util->contains($model_data,'model')->getArray();
+
+                $active_class= '';
+
+                if (!empty($active)) {
+                    $active_class= 'active';
+                }
+
+                $li = $dom_document->createElement('li');
+
+                if (!empty($model)) {
+                    $li->setAttribute('role','presentation');
+                    $li->setAttribute('class',vsprintf('dropdown %s',[$active_class,]));
+
+                    $a = $dom_document->createElement('a');
+                    $a->setAttribute('class','dropdown-toggle');
+                    $a->setAttribute('data-toggle','dropdown');
+                    $a->setAttribute('href','#');
+                    $a->setAttribute('role','button');
+                    $a->setAttribute('aria-haspopup','true');
+                    $a->setAttribute('aria-expanded','false');
+
+                    $span = $dom_document->createElement('span');
+                    $span->setAttribute('class','caret');
+
+                    $a->appendChild(new \DOMText($title));
+                    $a->appendChild($span);
+
+                    $li->appendChild($a);
+
+                    $ul = $dom_document->createElement('ul');
+                    $ul->setAttribute('class','dropdown-menu');
+
+                    foreach ($model as $model_sub_data) {
+                        $href_sub = $util->contains($model_sub_data,'href')->getString();
+                        $title_sub = $util->contains($model_sub_data,'title')->getString();
+                        $active_sub = $util->contains($model_sub_data,'active')->getBoolean();
+                        $icon_sub = $util->contains($model_sub_data,'icon')->getString();
+
+                        $active_sub_class= '';
+
+                        if (!empty($active_sub)) {
+                            $active_sub_class= 'active';
+                        }
+
+                        $li_sub = $dom_document->createElement('li');
+                        $li_sub->setAttribute('class',$active_sub_class);
+
+                        $a_sub = $dom_document->createElement('a',$title_sub);
+                        $a_sub->setAttribute('href',$href_sub);
+
+                        $li_sub->appendChild($a_sub);
+
+                        $ul->appendChild($li_sub);
+                    }
+
+                    $li->appendChild($ul);
+
+                } else {
+                    $li->setAttribute('role','presentation');
+                    $li->setAttribute('class',$active_class);
+
+                    $a = $dom_document->createElement('a',$title);
+                    $a->setAttribute('href',$href);
+
+                    $li->appendChild($a);
+                }
+
+                $dom_element->appendChild($li);
+            }
 
             $add_container = $this->addContainer();
+
             $this->setDomElement($add_container);
+
+            return;
         }
 
         public function renderHtml() {
