@@ -7,6 +7,8 @@ namespace Component\HtmlBlock {
     use \DOMDocument as DOMDocument;
 
     class Form {
+        private const QUERY_LIMIT_DEFAULT = 9999;
+
         private $dom_document;
         private $dom_element;
         private $model;
@@ -30,6 +32,7 @@ namespace Component\HtmlBlock {
             $this->setEncoding($encoding);
 
             $model = $util->contains($kwargs,'model')->getArray();
+            $model = $model[0];
             $this->setModel($model);
 
             $type = $util->contains($kwargs,'type')->getString();
@@ -303,6 +306,7 @@ namespace Component\HtmlBlock {
             }
 
             $data_list = $class
+                ->limit(1,self::QUERY_LIMIT_DEFAULT)
                 ->execute();
 
             $data_list = $data_list->data;
@@ -381,6 +385,12 @@ namespace Component\HtmlBlock {
                     $select_or_input->setAttribute('multiple','multiple');
                     $select_or_input->removeAttribute('name');
                     $select_or_input->setAttribute('name',vsprintf('%s[]',[$field,]));
+
+                } else {
+                    $option = $dom_document->createElement('option','---');
+                    $option->setAttribute('value','');
+
+                    $select_or_input->appendChild($option);
                 }
 
                 if (array_key_exists('disabled',$schema->rule) && !empty($schema->rule['disabled'])) {
@@ -887,7 +897,6 @@ namespace Component\HtmlBlock {
 
         private function modelPersist() {
             $model = $this->getModel();
-            $model = $model[0];
 
             $request = new Request();
             $util = new util();
@@ -918,7 +927,6 @@ namespace Component\HtmlBlock {
             $this->modelPersist();
 
             $model = $this->getModel();
-            $model = $model[0];
 
             $element_id = $this->getId();
             $type = $this->getType();
