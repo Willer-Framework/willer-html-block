@@ -1,12 +1,12 @@
 {
-    "name": "williamborba/willer-html-block",
+    "name": "wborba/willer-html-block",
     "description": "Interface creator for Willer Framework",
     "keywords": ["framework"],
     "homepage": "http://williamborba.github.io/willer-core",
     "type": "library",
     "require": {
         "php": ">=7.1",
-        "williamborba/willer-core": "dev-development"
+        "wborba/willer-core": "2.*"
     },
     "autoload": {
         "psr-4": {
