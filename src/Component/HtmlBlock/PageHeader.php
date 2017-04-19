@@ -1,37 +1,45 @@
 <?php
 
 namespace Component\HtmlBlock {
-    use Core\Exception\WException;
     use Core\Util;
+    use Core\Exception\WException;
+    use \DOMDocument as DOMDocument;
 
     class PageHeader {
-        private $html_block;
+        private $dom_document;
         private $dom_element;
         private $title;
         private $small_title;
         private $container_class;
         private $container_style;
 
-        public function __construct($html_block,...$kwargs) {
-            $this->setHtmlBlock($html_block);
-
+        public function __construct(...$kwargs) {
             if (!empty($kwargs)) {
                 $kwargs = $kwargs[0];
             }
 
-            $container_class = Util::get($kwargs,'container_class',null);
+            $util = new Util;
+
+            $encoding = $util->contains($kwargs,'encoding')->getString('UTF-8');
+            $this->setEncoding($encoding);
+
+            $container_class = $util->contains($kwargs,'container_class')->getString();
             $this->setContainerClass($container_class);
 
-            $title = Util::get($kwargs,'title',null);
+            $title = $util->contains($kwargs,'title')->getString();
             $this->setTitle($title);
 
-            $small_title = Util::get($kwargs,'small_title',null);
+            $small_title = $util->contains($kwargs,'small_title')->getString();
             $this->setSmallTitle($small_title);
 
-            $container_style = Util::get($kwargs,'container_style',null);
+            $container_style = $util->contains($kwargs,'container_style')->getString();
             $this->setContainerStyle($container_style);
 
-            $dom_element = $html_block->createElement('div');
+            $dom_document = new DOMDocument(null,$encoding);
+
+            $this->setDomDocument($dom_document);
+
+            $dom_element = $dom_document->createElement('div');
 
             if (isset($kwargs['id']) && !empty($kwargs['id'])) {
                 $dom_element->setAttribute('id',$kwargs['id']);
@@ -54,12 +62,22 @@ namespace Component\HtmlBlock {
             return $this;
         }
 
-        private function getHtmlBlock() {
-            return $this->html_block;
+        private function getDomDocument() {
+            return $this->dom_document;
         }
 
-        private function setHtmlBlock($html_block) {
-            $this->html_block = $html_block;
+        private function setDomDocument($dom_document) {
+            $this->dom_document = $dom_document;
+        }
+
+        public function getEncoding() {
+            return $this->encoding;
+        }
+
+        public function setEncoding($encoding) {
+            $this->encoding = $encoding;
+
+            return $this;
         }
 
         private function getContainerClass() {
@@ -103,12 +121,12 @@ namespace Component\HtmlBlock {
         }
 
         private function addContainer() {
-            $html_block = $this->getHtmlBlock();
+            $dom_document = $this->getDomDocument();
             $dom_element = $this->getDomElement();
             $container_class = $this->getContainerClass();
             $container_style = $this->getContainerStyle();
 
-            $div_class_col = $html_block->createElement('div');
+            $div_class_col = $dom_document->createElement('div');
             $div_class_col->setAttribute('class',$container_class);
             $div_class_col->setAttribute('style',$container_style);
 
@@ -118,13 +136,13 @@ namespace Component\HtmlBlock {
         }
 
         private function ready() {
-            $html_block = $this->getHtmlBlock();
+            $dom_document = $this->getDomDocument();
             $dom_element = $this->getDomElement();
             $title = $this->getTitle();
             $small_title = $this->getSmallTitle();
 
-            $h1 = $html_block->createElement('h1',$title);
-            $small = $html_block->createElement('small',$small_title);
+            $h1 = $dom_document->createElement('h1',$title);
+            $small = $dom_document->createElement('small',$small_title);
 
             $h1->appendChild($small);
             $dom_element->appendChild($h1);
@@ -134,11 +152,9 @@ namespace Component\HtmlBlock {
         }
 
         public function renderHtml() {
-            $html_block = $this->getHtmlBlock();
+            $dom_document = $this->getDomDocument();
 
-            $html_block->appendBodyContainerRow($this);
-
-            return $html_block->renderHtml();
+            return $dom_document->saveHTML();
         }
     }
 }

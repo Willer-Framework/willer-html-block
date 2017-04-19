@@ -1,33 +1,41 @@
 <?php
 
 namespace Component\HtmlBlock {
-    use Core\Exception\WException;
     use Core\Util;
+    use Core\Exception\WException;
+    use \DOMDocument as DOMDocument;
 
     class Breadcrumbs {
-        private $html_block;
+        private $dom_document;
         private $dom_element;
         private $model;
         private $container_class;
         private $container_style;
 
-        public function __construct($html_block,...$kwargs) {
-            $this->setHtmlBlock($html_block);
-
+        public function __construct(...$kwargs) {
             if (!empty($kwargs)) {
                 $kwargs = $kwargs[0];
             }
 
-            $model = Util::get($kwargs,'model',null);
+            $util = new Util;
+
+            $encoding = $util->contains($kwargs,'encoding')->getString('UTF-8');
+            $this->setEncoding($encoding);
+
+            $model = $util->contains($kwargs,'model')->getArray();
             $this->setModel($model);
 
-            $container_class = Util::get($kwargs,'container_class',null);
+            $container_class = $util->contains($kwargs,'container_class')->getString();
             $this->setContainerClass($container_class);
 
-            $container_style = Util::get($kwargs,'container_style',null);
+            $container_style = $util->contains($kwargs,'container_style')->getString();
             $this->setContainerStyle($container_style);
 
-            $dom_element = $html_block->createElement('ol');
+            $dom_document = new DOMDocument(null,$encoding);
+
+            $this->setDomDocument($dom_document);
+
+            $dom_element = $dom_document->createElement('ol');
 
             if (isset($kwargs['id']) && !empty($kwargs['id'])) {
                 $dom_element->setAttribute('id',$kwargs['id']);
@@ -50,12 +58,22 @@ namespace Component\HtmlBlock {
             return $this;
         }
 
-        private function getHtmlBlock() {
-            return $this->html_block;
+        private function getDomDocument() {
+            return $this->dom_document;
         }
 
-        private function setHtmlBlock($html_block) {
-            $this->html_block = $html_block;
+        private function setDomDocument($dom_document) {
+            $this->dom_document = $dom_document;
+        }
+
+        public function getEncoding() {
+            return $this->encoding;
+        }
+
+        public function setEncoding($encoding) {
+            $this->encoding = $encoding;
+
+            return $this;
         }
 
         private function getModel() {
@@ -91,12 +109,12 @@ namespace Component\HtmlBlock {
         }
 
         private function addContainer() {
-            $html_block = $this->getHtmlBlock();
+            $dom_document = $this->getDomDocument();
             $dom_element = $this->getDomElement();
             $container_class = $this->getContainerClass();
             $container_style = $this->getContainerStyle();
 
-            $div_class_col = $html_block->createElement('div');
+            $div_class_col = $dom_document->createElement('div');
             $div_class_col->setAttribute('class',$container_class);
             $div_class_col->setAttribute('style',$container_style);
 
@@ -106,7 +124,7 @@ namespace Component\HtmlBlock {
         }
 
         private function ready() {
-            $html_block = $this->getHtmlBlock();
+            $dom_document = $this->getDomDocument();
             $dom_element = $this->getDomElement();
             $model = $this->getModel();
 
@@ -120,13 +138,13 @@ namespace Component\HtmlBlock {
                 $active = $model_data['active'] ?? null;
 
                 if (!empty($active)) {
-                    $li_breadcrumbs = $html_block->createElement('li',$title);
+                    $li_breadcrumbs = $dom_document->createElement('li',$title);
                     $li_breadcrumbs->setAttribute('class','active');                    
                 } else {
-                    $li_a_heading = $html_block->createElement('a',$title);
+                    $li_a_heading = $dom_document->createElement('a',$title);
                     $li_a_heading->setAttribute('href',$href);
 
-                    $li_breadcrumbs = $html_block->createElement('li');
+                    $li_breadcrumbs = $dom_document->createElement('li');
                     $li_breadcrumbs->appendChild($li_a_heading);
 
                 }
@@ -139,11 +157,9 @@ namespace Component\HtmlBlock {
         }
 
         public function renderHtml() {
-            $html_block = $this->getHtmlBlock();
+            $dom_document = $this->getDomDocument();
 
-            $html_block->appendBody($this);
-
-            return $html_block->renderHtml();
+            return $dom_document->saveHTML();
         }
     }
 }

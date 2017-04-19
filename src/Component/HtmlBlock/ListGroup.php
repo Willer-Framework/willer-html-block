@@ -1,37 +1,45 @@
 <?php
 
 namespace Component\HtmlBlock {
-    use Core\Exception\WException;
     use Core\Util;
+    use Core\Exception\WException;
+    use \DOMDocument as DOMDocument;
 
     class ListGroup {
-        private $html_block;
+        private $dom_document;
         private $dom_element;
         private $model;
         private $title;
         private $container_class;
         private $container_style;
 
-        public function __construct($html_block,...$kwargs) {
-            $this->setHtmlBlock($html_block);
-
+        public function __construct(...$kwargs) {
             if (!empty($kwargs)) {
                 $kwargs = $kwargs[0];
             }
 
-            $model = Util::get($kwargs,'model',null);
+            $util = new Util;
+
+            $encoding = $util->contains($kwargs,'encoding')->getString('UTF-8');
+            $this->setEncoding($encoding);
+
+            $model = $util->contains($kwargs,'model')->getArray();
             $this->setModel($model);
 
-            $title = Util::get($kwargs,'title',null);
+            $title = $util->contains($kwargs,'title')->getString();
             $this->setTitle($title);
 
-            $container_class = Util::get($kwargs,'container_class',null);
+            $container_class = $util->contains($kwargs,'container_class')->getString();
             $this->setContainerClass($container_class);
 
-            $container_style = Util::get($kwargs,'container_style',null);
+            $container_style = $util->contains($kwargs,'container_style')->getString();
             $this->setContainerStyle($container_style);
 
-            $dom_element = $html_block->createElement('div');
+            $dom_document = new DOMDocument(null,$encoding);
+
+            $this->setDomDocument($dom_document);
+
+            $dom_element = $dom_document->createElement('div');
 
             if (isset($kwargs['id']) && !empty($kwargs['id'])) {
                 $dom_element->setAttribute('id',$kwargs['id']);
@@ -54,12 +62,22 @@ namespace Component\HtmlBlock {
             return $this;
         }
 
-        private function getHtmlBlock() {
-            return $this->html_block;
+        private function getDomDocument() {
+            return $this->dom_document;
         }
 
-        private function setHtmlBlock($html_block) {
-            $this->html_block = $html_block;
+        private function setDomDocument($dom_document) {
+            $this->dom_document = $dom_document;
+        }
+
+        public function getEncoding() {
+            return $this->encoding;
+        }
+
+        public function setEncoding($encoding) {
+            $this->encoding = $encoding;
+
+            return $this;
         }
 
         private function getModel() {
@@ -103,12 +121,12 @@ namespace Component\HtmlBlock {
         }
 
         private function addContainer() {
-            $html_block = $this->getHtmlBlock();
+            $dom_document = $this->getDomDocument();
             $dom_element = $this->getDomElement();
             $container_class = $this->getContainerClass();
             $container_style = $this->getContainerStyle();
 
-            $div_class_col = $html_block->createElement('div');
+            $div_class_col = $dom_document->createElement('div');
             $div_class_col->setAttribute('class',$container_class);
             $div_class_col->setAttribute('style',$container_style);
 
@@ -122,9 +140,9 @@ namespace Component\HtmlBlock {
                 return false;
             }
 
-            $html_block = $this->getHtmlBlock();
+            $dom_document = $this->getDomDocument();
 
-            $ul_list_group = $html_block->createElement('ul');
+            $ul_list_group = $dom_document->createElement('ul');
             $ul_list_group->setAttribute('class','list-group');
 
             foreach ($model_sub as $model_sub_data) {
@@ -133,18 +151,18 @@ namespace Component\HtmlBlock {
                 $active = $model_sub_data['active'] ?? null;
                 $icon = $model_sub_data['icon'] ?? null;
 
-                $li_a_list_group = $html_block->createElement('a');
+                $li_a_list_group = $dom_document->createElement('a');
                 $li_a_list_group->setAttribute('href',$href);
                 
                 if (!empty($icon)) {
-                    $li_a_span_list_group = $html_block->createElement('span');
+                    $li_a_span_list_group = $dom_document->createElement('span');
                     $li_a_span_list_group->setAttribute('class',$icon);
 
                     $li_a_list_group->appendChild($li_a_span_list_group);
                 }
 
                 if (!empty($active)) {
-                    $strong_list_group = $html_block->createElement('strong',$title);
+                    $strong_list_group = $dom_document->createElement('strong',$title);
 
                     $li_a_list_group->appendChild($strong_list_group);
 
@@ -152,7 +170,7 @@ namespace Component\HtmlBlock {
                     $li_a_list_group->appendChild(new \DOMText($title));
                 }
 
-                $li_list_group = $html_block->createElement('li');
+                $li_list_group = $dom_document->createElement('li');
 
                 $li_list_group->setAttribute('class','list-group-item');
 
@@ -160,7 +178,7 @@ namespace Component\HtmlBlock {
                 $ul_list_group->appendChild($li_list_group);
             }
 
-            $div_list_group = $html_block->createElement('div');
+            $div_list_group = $dom_document->createElement('div');
 
             $div_list_group->setAttribute('class','row collapse');
 
@@ -173,7 +191,7 @@ namespace Component\HtmlBlock {
         }
 
         private function ready() {
-            $html_block = $this->getHtmlBlock();
+            $dom_document = $this->getDomDocument();
             $dom_element = $this->getDomElement();
             $model = $this->getModel();
 
@@ -192,7 +210,7 @@ namespace Component\HtmlBlock {
                 $model_sub_id = uniqid();
 
                 if (!empty($model_sub)) {
-                    $a_or_div_list_group_item = $html_block->createElement('div');
+                    $a_or_div_list_group_item = $dom_document->createElement('div');
                     $a_or_div_list_group_item->setAttribute('style','cursor:pointer;');
                     $a_or_div_list_group_item->setAttribute('data-toggle','collapse');
                     $a_or_div_list_group_item->setAttribute('data-target',vsprintf('#%s',[$model_sub_id,]));
@@ -200,7 +218,7 @@ namespace Component\HtmlBlock {
                     $a_or_div_list_group_item->setAttribute('aria-controls',$model_sub_id);
 
                 } else {
-                    $a_or_div_list_group_item = $html_block->createElement('a');
+                    $a_or_div_list_group_item = $dom_document->createElement('a');
                     $a_or_div_list_group_item->setAttribute('href',$href);
                 }
 
@@ -211,11 +229,11 @@ namespace Component\HtmlBlock {
                     $a_or_div_list_group_item->setAttribute('class','list-group-item');
                 }
 
-                $a_h4_heading  = $html_block->createElement('h4');
+                $a_h4_heading  = $dom_document->createElement('h4');
                 $a_h4_heading->setAttribute('class','list-group-item-heading');
 
                 if (!empty($icon)) {
-                    $a_h4_span_heading = $html_block->createElement('span');
+                    $a_h4_span_heading = $dom_document->createElement('span');
                     $a_h4_span_heading->setAttribute('class',vsprintf('%s pull-right',[$icon,]));
 
                     $a_h4_heading->appendChild($a_h4_span_heading);
@@ -226,7 +244,7 @@ namespace Component\HtmlBlock {
                 $a_or_div_list_group_item->appendChild($a_h4_heading);
 
                 if (!empty($content)) {
-                    $a_p_heading = $html_block->createElement('p',$content);
+                    $a_p_heading = $dom_document->createElement('p',$content);
                     $a_p_heading->setAttribute('class','list-group-item-text');
 
                     $a_or_div_list_group_item->appendChild($a_p_heading);
@@ -242,11 +260,9 @@ namespace Component\HtmlBlock {
         }
 
         public function renderHtml() {
-            $html_block = $this->getHtmlBlock();
+            $dom_document = $this->getDomDocument();
 
-            $html_block->appendBody($this);
-
-            return $html_block->renderHtml();
+            return $dom_document->saveHTML();
         }
     }
 }
