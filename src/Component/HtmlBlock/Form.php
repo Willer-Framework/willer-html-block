@@ -325,8 +325,10 @@ namespace Component\HtmlBlock {
                                     break;
                                 }
                             }
-                        } else if ($model->$field->$class_field_primarykey == $data->$class_field_primarykey) {
-                            $option->setAttribute('selected','selected');
+                        } else {
+                            if (is_object($model->$field) && $model->$field->$class_field_primarykey == $data->$class_field_primarykey) {
+                                $option->setAttribute('selected','selected');
+                            }
                         }
                     }
 
@@ -419,7 +421,7 @@ namespace Component\HtmlBlock {
                 $input_type = 'text';
 
                 if (array_key_exists('password',$schema->rule) && !empty($schema->rule['password'])) {
-                    $model->$field = null;
+                    // $model->$field = null;
                     $input_type = 'password';
                 }
 
