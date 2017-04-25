@@ -166,10 +166,10 @@ namespace Component\HtmlBlock {
                 $icon = $util->contains($model_data,'icon')->getString();
                 $model = $util->contains($model_data,'model')->getArray();
 
-                $active_class= '';
+                $active_class = '';
 
                 if (!empty($active)) {
-                    $active_class= 'active';
+                    $active_class = 'active';
                 }
 
                 $li = $dom_document->createElement('li');
@@ -185,6 +185,14 @@ namespace Component\HtmlBlock {
                     $a->setAttribute('role','button');
                     $a->setAttribute('aria-haspopup','true');
                     $a->setAttribute('aria-expanded','false');
+
+                    if (!empty($icon)) {
+                        $span = $dom_document->createElement('span');
+                        $span->setAttribute('class',$icon);
+                        $span->setAttribute('aria-hidden','true');
+
+                        $a->appendChild($span);
+                    }
 
                     $span = $dom_document->createElement('span');
                     $span->setAttribute('class','caret');
@@ -212,8 +220,18 @@ namespace Component\HtmlBlock {
                         $li_sub = $dom_document->createElement('li');
                         $li_sub->setAttribute('class',$active_sub_class);
 
-                        $a_sub = $dom_document->createElement('a',$title_sub);
+                        $a_sub = $dom_document->createElement('a');
                         $a_sub->setAttribute('href',$href_sub);
+
+                        if (!empty($icon_sub)) {
+                            $span = $dom_document->createElement('span');
+                            $span->setAttribute('class',$icon_sub);
+                            $span->setAttribute('aria-hidden','true');
+
+                            $a_sub->appendChild($span);
+                        }
+
+                        $a_sub->appendChild(new \DOMText($title_sub));
 
                         $li_sub->appendChild($a_sub);
 
@@ -226,8 +244,18 @@ namespace Component\HtmlBlock {
                     $li->setAttribute('role','presentation');
                     $li->setAttribute('class',$active_class);
 
-                    $a = $dom_document->createElement('a',$title);
+                    $a = $dom_document->createElement('a');
                     $a->setAttribute('href',$href);
+
+                    if (!empty($icon)) {
+                        $span = $dom_document->createElement('span');
+                        $span->setAttribute('class',$icon);
+                        $span->setAttribute('aria-hidden','true');
+
+                        $a->appendChild($span);
+                    }
+
+                    $a->appendChild(new \DOMText($title));
 
                     $li->appendChild($a);
                 }
