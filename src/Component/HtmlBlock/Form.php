@@ -207,6 +207,19 @@ namespace Component\HtmlBlock {
             $this->container_style = $container_style;
         }
 
+        private function addFieldHidden($model,$schema,$field) {
+            $dom_document = $this->getDomDocument();
+            $element_id = $this->getId();
+
+            $input = $dom_document->createElement('input');
+            $input->setAttribute('name',$field);
+            $input->setAttribute('value',$model->$field);
+            $input->setAttribute('type','hidden');
+            $input->setAttribute('id',vsprintf('%s-field-%s',[$element_id,$field]));
+
+            return $input;
+        }
+
         private function addFieldPrimaryKey($model,$schema,$field) {
             $dom_document = $this->getDomDocument();
             $element_id = $this->getId();
@@ -935,6 +948,10 @@ namespace Component\HtmlBlock {
 
             foreach ($model->schema() as $field => $schema) {
                 if (array_key_exists('hidden',$schema->rule) && !empty($schema->rule)) {
+                    $add_field_hidden = $this->addFieldHidden($model,$schema,$field);
+
+                    $dom_element->appendChild($add_field_hidden);
+
                     continue;
                 }
 
