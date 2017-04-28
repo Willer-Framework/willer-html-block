@@ -413,21 +413,47 @@ namespace Component\HtmlBlock {
                 }
 
                 foreach ($schema->rule['option'] as $key => $value) {
-                    $option = $dom_document->createElement('option',$value);
-                    $option->setAttribute('value',$key);
+                    if (!is_array($value)) {
+                        $option = $dom_document->createElement('option',$value);
+                        $option->setAttribute('value',$key);
 
-                    if (array_key_exists('multiple',$schema->rule) && !empty($schema->rule['multiple'])) {
-                        if (!is_null($model->$field) && in_array($key,$model->$field)) {
-                            $option->setAttribute('selected','selected');
+                        if (array_key_exists('multiple',$schema->rule) && !empty($schema->rule['multiple'])) {
+                            if (!is_null($model->$field) && in_array($key,$model->$field)) {
+                                $option->setAttribute('selected','selected');
+                            }
+
+                        } else {
+                            if (!is_null($model->$field) && $model->$field == $key) {
+                                $option->setAttribute('selected','selected');
+                            }
                         }
+
+                        $select_or_input->appendChild($option);
 
                     } else {
-                        if (!is_null($model->$field) && $model->$field == $key) {
-                            $option->setAttribute('selected','selected');
-                        }
-                    }
+                        $option_group = $dom_document->createElement('optgroup');
+                        $option_group->setAttribute('label',$key);
 
-                    $select_or_input->appendChild($option);
+                        foreach ($value as $sub_key => $sub_value) {
+                            $option = $dom_document->createElement('option',$sub_value);
+                            $option->setAttribute('value',$sub_key);
+
+                            if (array_key_exists('multiple',$schema->rule) && !empty($schema->rule['multiple'])) {
+                                if (!is_null($model->$field) && in_array($sub_key,$model->$field)) {
+                                    $option->setAttribute('selected','selected');
+                                }
+
+                            } else {
+                                if (!is_null($model->$field) && $model->$field == $sub_key) {
+                                    $option->setAttribute('selected','selected');
+                                }
+                            }
+
+                            $option_group->appendChild($option);
+                        }
+
+                        $select_or_input->appendChild($option_group);
+                    }
                 }
 
             } else {

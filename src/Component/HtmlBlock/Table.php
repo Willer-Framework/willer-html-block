@@ -550,14 +550,33 @@ namespace Component\HtmlBlock {
 
                         if (!empty($data_schema[$column_value]->rule['option'])) {
                             foreach ($data_schema[$column_value]->rule['option'] as $key => $value) {
-                                $option = $dom_document->createElement('option',$value);
-                                $option->setAttribute('value',$key);
+                                if (!is_array($value)) {
+                                    $option = $dom_document->createElement('option',$value);
+                                    $option->setAttribute('value',$key);
 
-                                if ((string) $key === $field_name_value) {
-                                    $option->setAttribute('selected','selected');
+                                    if ((string) $key === $field_name_value) {
+                                        $option->setAttribute('selected','selected');
+                                    }
+
+                                    $field->appendChild($option);
+
+                                } else {
+                                    $option_group = $dom_document->createElement('optgroup');
+                                    $option_group->setAttribute('label',$key);
+
+                                    foreach ($value as $sub_key => $sub_value) {
+                                        $option = $dom_document->createElement('option',$sub_value);
+                                        $option->setAttribute('value',$sub_key);
+
+                                        if ((string) $sub_key === $field_name_value) {
+                                            $option->setAttribute('selected','selected');
+                                        }
+
+                                        $option_group->appendChild($option);
+                                    }
+
+                                    $field->appendChild($option_group);
                                 }
-
-                                $field->appendChild($option);
                             }
                         }
 
