@@ -332,7 +332,7 @@ namespace Component\HtmlBlock {
                     if (!empty($model->$field)) {
                         if (is_array($model->$field)) {
                             foreach ($model->$field as $model_field) {
-                                if ($model_field->$class_field_primarykey == $data->$class_field_primarykey) {
+                                if ($model_field == $data->$class_field_primarykey) {
                                     $option->setAttribute('selected','selected');
 
                                     break;

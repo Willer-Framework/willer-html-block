@@ -823,7 +823,11 @@ namespace Component\HtmlBlock {
                     }
                 }
 
-                $table_tbody_tr_element = $this->addTableButton($table_tbody_tr_element,$data->$field_primary_key);
+                $table_tbody_tr_element_with_table_button = $this->addTableButton($table_tbody_tr_element,$data->$field_primary_key);
+
+                if (!empty($table_tbody_tr_element_with_table_button)) {
+                    $node_table_tbody->appendChild($table_tbody_tr_element_with_table_button);
+                }
 
                 $node_table_tbody->appendChild($table_tbody_tr_element);
             }
