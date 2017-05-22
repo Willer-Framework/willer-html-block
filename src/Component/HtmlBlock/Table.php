@@ -373,6 +373,7 @@ namespace Component\HtmlBlock {
                         $a_div_button_extra_group->setAttribute('data-placement','top');
                         $a_div_button_extra_group->setAttribute('title',$alt);
                         $a_div_button_extra_group->setAttribute('alt',$alt);
+                        $a_div_button_extra_group->setAttribute('data-container','body');
                     }
 
                     $icon = $util->contains($data,'icon')->getString();
@@ -475,8 +476,8 @@ namespace Component\HtmlBlock {
 
                     } else if ($type == 'td') {
                         if (array_key_exists('option',$object_schema[$column_value]->rule) && !empty($object_schema[$column_value]->rule['option'])) {
-                            if (empty($data->$column_value)) {
-                                $data->$column_value = '0';
+                            if (empty($object->$column_value)) {
+                                $object->$column_value = '0';
                             }
 
                             if (array_key_exists((string) $object->$column_value,$object_schema[$column_value]->rule['option'])) {
@@ -693,7 +694,7 @@ namespace Component\HtmlBlock {
             $node_table_thead->appendChild($table_thead_tr_element);
         }
 
-        private function addTableButton($table_tbody_tr_element,$id) {
+        private function addTableButton($table_tbody_tr_element,$model) {
             $dom_document = $this->getDomDocument();
             $element_id = $this->getId();
             $button_inline = $this->getButtonInline();
@@ -712,7 +713,7 @@ namespace Component\HtmlBlock {
                 $href = null;
 
                 if (array_key_exists('href',$data)) {
-                    $href = $data['href']($id);
+                    $href = $data['href']($model);
 
                 }
 
@@ -823,11 +824,7 @@ namespace Component\HtmlBlock {
                     }
                 }
 
-                $table_tbody_tr_element_with_table_button = $this->addTableButton($table_tbody_tr_element,$data->$field_primary_key);
-
-                if (!empty($table_tbody_tr_element_with_table_button)) {
-                    $node_table_tbody->appendChild($table_tbody_tr_element_with_table_button);
-                }
+                $table_tbody_tr_element = $this->addTableButton($table_tbody_tr_element,$data);
 
                 $node_table_tbody->appendChild($table_tbody_tr_element);
             }
