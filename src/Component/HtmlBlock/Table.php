@@ -824,9 +824,14 @@ namespace Component\HtmlBlock {
                     }
                 }
 
-                $table_tbody_tr_element = $this->addTableButton($table_tbody_tr_element,$data);
+                $table_tbody_tr_element_with_button = $this->addTableButton($table_tbody_tr_element,$data);
 
-                $node_table_tbody->appendChild($table_tbody_tr_element);
+                if (!empty($table_tbody_tr_element_with_button)) {
+                    $node_table_tbody->appendChild($table_tbody_tr_element_with_button);
+
+                } else {
+                    $node_table_tbody->appendChild($table_tbody_tr_element);
+                }
             }
         }
 

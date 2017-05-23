@@ -329,10 +329,19 @@ namespace Component\HtmlBlock {
                     $option = $dom_document->createElement('option',$data->$class_field_reference);
                     $option->setAttribute('value',$data->$class_field_primarykey);
 
+                    if (array_key_exists('disabled',$schema->rule) && !empty($schema->rule['disabled'])) {
+                        $option->setAttribute('disabled','disabled');
+                    }
+
                     if (!empty($model->$field)) {
                         if (is_array($model->$field)) {
                             foreach ($model->$field as $model_field) {
-                                if ($model_field == $data->$class_field_primarykey) {
+                                if (is_object($model_field) && $model_field->$class_field_primarykey == $data->$class_field_primarykey) {
+                                    $option->setAttribute('selected','selected');
+
+                                    break;
+
+                                } else if ($model_field == $data->$class_field_primarykey) {
                                     $option->setAttribute('selected','selected');
 
                                     break;
@@ -473,6 +482,10 @@ namespace Component\HtmlBlock {
 
                 if (array_key_exists('disabled',$schema->rule) && !empty($schema->rule['disabled'])) {
                     $select_or_input->setAttribute('disabled','disabled');
+                }
+
+                if (array_key_exists('readonly',$schema->rule) && !empty($schema->rule['readonly'])) {
+                    $select_or_input->setAttribute('readonly','readonly');
                 }
             }
 
