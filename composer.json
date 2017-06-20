@@ -6,7 +6,7 @@
     "type": "library",
     "require": {
         "php": ">=7.1",
-        "wborba/willer-core": "dev-development"
+        "wborba/willer-core": "dev-develop"
     },
     "autoload": {
         "psr-4": {
