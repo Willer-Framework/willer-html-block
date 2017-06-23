@@ -2,7 +2,6 @@
 
 namespace Component\HtmlBlock {
     use Core\{Request,Util};
-    use Core\Exception\WException;
     use \DOMDocument as DOMDocument;
 
     class Table {

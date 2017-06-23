@@ -2,9 +2,7 @@
 
 namespace Component\HtmlBlock {
     use Core\Util;
-    use Core\Exception\WException;
     use \DOMDocument as DOMDocument;
-    use \DOMElement as DOMElement;
 
     class HtmlBlock {
         private $dom_document;
@@ -255,7 +253,7 @@ namespace Component\HtmlBlock {
             $dom_document = $this->getDomDocument();
 
             if (!is_array($dom_node_list)) {
-                throw new WException(vsprintf('Expected array, given %s',[gettype($dom_node_list)]));
+                throw new \Error(vsprintf('Expected array, given %s',[gettype($dom_node_list)]));
             }
 
             $node_body_div_container_row_main = $this->getNodeBodyDivContainerRowMain();

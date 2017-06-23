@@ -2,7 +2,6 @@
 
 namespace Component\HtmlBlock {
     use Core\Util;
-    use Core\Exception\WException;
     use \DOMDocument as DOMDocument;
 
     class Sidebar {

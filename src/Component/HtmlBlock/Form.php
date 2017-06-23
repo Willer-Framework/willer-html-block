@@ -2,8 +2,7 @@
 
 namespace Component\HtmlBlock {
     use Core\{Util,Request};
-    use Core\DAO\Transaction;
-    use Core\Exception\WException;
+    use Core\ORM\Transaction;
     use \DOMDocument as DOMDocument;
 
     class Form {
