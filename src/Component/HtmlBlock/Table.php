@@ -444,10 +444,6 @@ namespace Component\HtmlBlock {
                     $this->modelLoop($dom_document,$table_tr_element,$object->$key,$column_value,$type);
 
                 } else {
-                    if (!array_key_exists($column_value,$object)) {
-                        continue;
-                    }
-
                     if ($type == 'th') {
                         $object_column_value_label = $column_value;
 
@@ -521,14 +517,13 @@ namespace Component\HtmlBlock {
             }
 
             foreach ($column as $key => $column_value) {
-                if (is_array($column_value) && !empty($column_value)) {
+                if (is_array($column_value) && !empty($column_value) && !is_null($data->$key)) {
                     $this->modelLoop($dom_document,$table_thead_tr_element,$data->$key,$column_value,'form',$data_table_name);
 
-                } else {
-                    if (!array_key_exists($column_value,$data)) {
-                        continue;
-                    }
+                } elseif(is_array($column_value) && (empty($column_value) || is_null($data->$key))) {
+                    continue;
 
+                } else {
                     $field_name = vsprintf('%s__%s',[$data_table_name,$column_value]);
 
                     if (in_array($data_schema[$column_value]->method,['char','boolean','integer']) && array_key_exists('option',$data_schema[$column_value]->rule)) {
@@ -670,14 +665,13 @@ namespace Component\HtmlBlock {
             }
 
             foreach ($column as $key => $column_value) {
-                if (is_array($column_value) && !empty($column_value)) {
+                if (is_array($column_value) && !empty($column_value) && !is_null($data->$key)) {
                     $this->modelLoop($dom_document,$table_thead_tr_element,$data->$key,$column_value,'th');
 
-                } else {
-                    if (!array_key_exists($column_value,$data)) {
-                        continue;
-                    }
+                } elseif (is_array($column_value) && (empty($column_value) || is_null($data->$key))) {
+                    continue;
 
+                } else {
                     if (array_key_exists('label',$data_schema[$column_value]->rule)) {
                         $column_value = $data_schema[$column_value]->rule['label'];
                     }
@@ -801,13 +795,13 @@ namespace Component\HtmlBlock {
                             $data_key = $data->$key;
                         }
 
-                        $this->modelLoop($dom_document,$table_tbody_tr_element,$data_key,$column_value,'td');
-
-                    } else {
-                        if (!array_key_exists($column_value,$data)) {
+                        if (is_null($data_key)) {
                             continue;
                         }
 
+                        $this->modelLoop($dom_document,$table_tbody_tr_element,$data_key,$column_value,'td');
+
+                    } else {
                         if (array_key_exists('option',$data_schema[$column_value]->rule) && !empty($data_schema[$column_value]->rule['option'])) {
                             if (empty($data->$column_value)) {
                                 $data->$column_value = '0';
