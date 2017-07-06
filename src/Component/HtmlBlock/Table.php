@@ -828,6 +828,46 @@ namespace Component\HtmlBlock {
             }
         }
 
+        private function addTotalizer() {
+            $dom_document = $this->getDomDocument();
+            $model = $this->getModel();
+            $node_panel_body = $this->getNodePanelBody();
+            $node_container = $this->getNodeContainer();
+
+            $register_total = 0;
+            $page_total = 0;
+            $register_perpage = 0;
+
+            if (isset($model->register_total)) {
+                $register_total = $model->register_total;
+            }
+
+            if (isset($model->page_total)) {
+                $page_total = $model->page_total;
+            }
+
+            if (isset($model->register_perpage)) {
+                $register_perpage = $model->register_perpage;
+            }
+
+            $p_text = $dom_document->createElement('p');
+            $p_text->setAttribute('class','pagination');
+
+            $p_text->appendChild(new \DOMText(
+                vsprintf('Total de registros "%s". Exibindo "%s" registros por página, total de páginas "%s"',
+                    [$register_total,$register_perpage,$page_total])));
+
+            $nav_totalizer = $dom_document->createElement('nav');
+            $nav_totalizer->appendChild($p_text);
+
+            if (!empty($node_panel_body)) {
+                $node_panel_body->appendChild($nav_totalizer);
+
+            } else {
+                $node_container->appendChild($nav_totalizer);
+            }
+        }
+
         private function addPagination() {
             $dom_document = $this->getDomDocument();
             $model = $this->getModel();
@@ -1037,6 +1077,7 @@ namespace Component\HtmlBlock {
             $this->addForm();
             $this->addPanel();
             $this->addContainer();
+            $this->addTotalizer();
             $this->addPagination();
         }
 
