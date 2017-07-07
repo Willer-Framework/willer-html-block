@@ -854,7 +854,7 @@ namespace Component\HtmlBlock {
             $p_text->setAttribute('class','pagination');
 
             $p_text->appendChild(new \DOMText(
-                vsprintf('Total de registros "%s". Exibindo "%s" registros por página, total de páginas "%s"',
+                vsprintf('Total de registros "%s". Exibindo "%s" registros por página, total de "%s" páginas',
                     [$register_total,$register_perpage,$page_total])));
 
             $nav_totalizer = $dom_document->createElement('nav');
@@ -874,94 +874,103 @@ namespace Component\HtmlBlock {
 
             $pagination = $this->getPagination();
 
-            $util = new Util;
-
             if (isset($model->page_total) && $model->register_total > $model->register_perpage) {
+                $util = new Util;
+                $request = new Request;
+
                 $node_panel_body = $this->getNodePanelBody();
                 $node_container = $this->getNodeContainer();
                 $element_id = $this->getId();
 
                 $nav_pagination = $dom_document->createElement('nav');
-                $ul_nav_pagination = $dom_document->createElement('ul');
-                $ul_nav_pagination->setAttribute('class','pagination');
+                $ul_nav = $dom_document->createElement('ul');
+                $ul_nav->setAttribute('class','pagination');
+                $btn_url_string = $util->contains($pagination,'btn_url_string')->getString();
+                $a_class = $util->contains($pagination,'class')->getString();
+                $left_alt = $util->contains($pagination,'left_alt')->getString();
+                $right_alt = $util->contains($pagination,'right_alt')->getString();
+
+                $http_get = $request->getHttpGet();
+                unset($http_get[$btn_url_string]);
+                $http_get_rawstring = http_build_query($http_get);
 
                 if ($model->page_previous > 1) {
-                    $li_ul_nav_pagination = $dom_document->createElement('li');
-                    $a_li_ul_nav_pagination = $dom_document->createElement('a');
-                    $a_li_ul_nav_pagination->setAttribute('href',vsprintf('?%s=1',[$util->contains($pagination,'btn_url_string')->getString(),]));
-                    $a_li_ul_nav_pagination->setAttribute('class',vsprintf('%s',[$util->contains($pagination,'class')->getString(),]));
-                    $a_li_ul_nav_pagination->setAttribute('data-page','1');
-                    $span_a_li_ul_nav_pagination = $dom_document->createElement('span');
-                    $span_a_li_ul_nav_pagination->setAttribute('class','glyphicon glyphicon-chevron-left');
-                    $span_a_li_ul_nav_pagination->setAttribute('alt',$util->contains($pagination,'left_alt')->getString());
-                    $span_a_li_ul_nav_pagination->setAttribute('title',$util->contains($pagination,'left_alt')->getString());
-                    $span_a_li_ul_nav_pagination->setAttribute('aria-hidden','true');
+                    $li_ul_nav = $dom_document->createElement('li');
+                    $a_li_ul_nav = $dom_document->createElement('a');
+                    $a_li_ul_nav->setAttribute('href',vsprintf('?%s&%s=1',[$http_get_rawstring,$btn_url_string,]));
+                    $a_li_ul_nav->setAttribute('class',vsprintf('%s',[$a_class,]));
+                    $a_li_ul_nav->setAttribute('data-page','1');
+                    $span_a_li_ul_nav = $dom_document->createElement('span');
+                    $span_a_li_ul_nav->setAttribute('class','glyphicon glyphicon-chevron-left');
+                    $span_a_li_ul_nav->setAttribute('alt',$left_alt);
+                    $span_a_li_ul_nav->setAttribute('title',$left_alt);
+                    $span_a_li_ul_nav->setAttribute('aria-hidden','true');
 
-                    $a_li_ul_nav_pagination->appendChild($span_a_li_ul_nav_pagination);
-                    $li_ul_nav_pagination->appendChild($a_li_ul_nav_pagination);
+                    $a_li_ul_nav->appendChild($span_a_li_ul_nav);
+                    $li_ul_nav->appendChild($a_li_ul_nav);
 
-                    $ul_nav_pagination->appendChild($li_ul_nav_pagination);
+                    $ul_nav->appendChild($li_ul_nav);
                 }
 
                 if ($model->page_previous < $model->page_current) {
-                    $li_ul_nav_pagination = $dom_document->createElement('li');
-                    $a_li_ul_nav_pagination = $dom_document->createElement('a');
-                    $a_li_ul_nav_pagination->setAttribute('href',vsprintf('?%s=%s',[$util->contains($pagination,'btn_url_string')->getString(),$model->page_previous,]));
-                    $a_li_ul_nav_pagination->setAttribute('class',vsprintf('%s',[$util->contains($pagination,'class')->getString(),]));
-                    $a_li_ul_nav_pagination->setAttribute('data-page',$model->page_previous);
-                    $span_a_li_ul_nav_pagination = $dom_document->createElement('span',$model->page_previous);
-                    $span_a_li_ul_nav_pagination->setAttribute('aria-hidden','true');
+                    $li_ul_nav = $dom_document->createElement('li');
+                    $a_li_ul_nav = $dom_document->createElement('a');
+                    $a_li_ul_nav->setAttribute('href',vsprintf('?%s&%s=%s',[$http_get_rawstring,$btn_url_string,$model->page_previous,]));
+                    $a_li_ul_nav->setAttribute('class',vsprintf('%s',[$a_class,]));
+                    $a_li_ul_nav->setAttribute('data-page',$model->page_previous);
+                    $span_a_li_ul_nav = $dom_document->createElement('span',$model->page_previous);
+                    $span_a_li_ul_nav->setAttribute('aria-hidden','true');
 
-                    $a_li_ul_nav_pagination->appendChild($span_a_li_ul_nav_pagination);
-                    $li_ul_nav_pagination->appendChild($a_li_ul_nav_pagination);
+                    $a_li_ul_nav->appendChild($span_a_li_ul_nav);
+                    $li_ul_nav->appendChild($a_li_ul_nav);
 
-                    $ul_nav_pagination->appendChild($li_ul_nav_pagination);
+                    $ul_nav->appendChild($li_ul_nav);
                 }
 
-                $li_ul_nav_pagination = $dom_document->createElement('li');
-                $li_ul_nav_pagination->setAttribute('class','active');
-                $a_li_ul_nav_pagination = $dom_document->createElement('a',$model->page_current);
-                $a_li_ul_nav_pagination->setAttribute('class',vsprintf('%s-pag',[$element_id,]));
-                $a_li_ul_nav_pagination->setAttribute('data-page',$model->page_current);
+                $li_ul_nav = $dom_document->createElement('li');
+                $li_ul_nav->setAttribute('class','active');
+                $a_li_ul_nav = $dom_document->createElement('a',$model->page_current);
+                $a_li_ul_nav->setAttribute('class',vsprintf('%s-pag',[$element_id,]));
+                $a_li_ul_nav->setAttribute('data-page',$model->page_current);
 
-                $li_ul_nav_pagination->appendChild($a_li_ul_nav_pagination);
+                $li_ul_nav->appendChild($a_li_ul_nav);
 
-                $ul_nav_pagination->appendChild($li_ul_nav_pagination);
+                $ul_nav->appendChild($li_ul_nav);
 
                 if ($model->page_next < $model->page_total) {
-                    $li_ul_nav_pagination = $dom_document->createElement('li');
-                    $a_li_ul_nav_pagination = $dom_document->createElement('a');
-                    $a_li_ul_nav_pagination->setAttribute('href',vsprintf('?%s=%s',[$util->contains($pagination,'btn_url_string')->getString(),$model->page_next]));
-                    $a_li_ul_nav_pagination->setAttribute('class',vsprintf('%s',[$util->contains($pagination,'class')->getString(),]));
-                    $a_li_ul_nav_pagination->setAttribute('data-page',$model->page_next);
-                    $span_a_li_ul_nav_pagination = $dom_document->createElement('span',$model->page_next);
-                    $span_a_li_ul_nav_pagination->setAttribute('aria-hidden','true');
+                    $li_ul_nav = $dom_document->createElement('li');
+                    $a_li_ul_nav = $dom_document->createElement('a');
+                    $a_li_ul_nav->setAttribute('href',vsprintf('?%s&%s=%s',[$http_get_rawstring,$btn_url_string,$model->page_next]));
+                    $a_li_ul_nav->setAttribute('class',vsprintf('%s',[$a_class,]));
+                    $a_li_ul_nav->setAttribute('data-page',$model->page_next);
+                    $span_a_li_ul_nav = $dom_document->createElement('span',$model->page_next);
+                    $span_a_li_ul_nav->setAttribute('aria-hidden','true');
 
-                    $a_li_ul_nav_pagination->appendChild($span_a_li_ul_nav_pagination);
-                    $li_ul_nav_pagination->appendChild($a_li_ul_nav_pagination);
+                    $a_li_ul_nav->appendChild($span_a_li_ul_nav);
+                    $li_ul_nav->appendChild($a_li_ul_nav);
 
-                    $ul_nav_pagination->appendChild($li_ul_nav_pagination);
+                    $ul_nav->appendChild($li_ul_nav);
                 }
 
                 if ($model->page_total > $model->page_current) {
-                    $li_ul_nav_pagination = $dom_document->createElement('li');
-                    $a_li_ul_nav_pagination = $dom_document->createElement('a');
-                    $a_li_ul_nav_pagination->setAttribute('href',vsprintf('?%s=%s',[$util->contains($pagination,'btn_url_string')->getString(),$model->page_total]));
-                    $a_li_ul_nav_pagination->setAttribute('class',vsprintf('%s',[$util->contains($pagination,'class')->getString(),]));
-                    $a_li_ul_nav_pagination->setAttribute('data-page',$model->page_total);
-                    $span_a_li_ul_nav_pagination = $dom_document->createElement('span');
-                    $span_a_li_ul_nav_pagination->setAttribute('class','glyphicon glyphicon-chevron-right');
-                    $span_a_li_ul_nav_pagination->setAttribute('alt',$util->contains($pagination,'right_alt')->getString());
-                    $span_a_li_ul_nav_pagination->setAttribute('title',$util->contains($pagination,'right_alt')->getString());
-                    $span_a_li_ul_nav_pagination->setAttribute('aria-hidden','true');
+                    $li_ul_nav = $dom_document->createElement('li');
+                    $a_li_ul_nav = $dom_document->createElement('a');
+                    $a_li_ul_nav->setAttribute('href',vsprintf('?%s&%s=%s',[$http_get_rawstring,$btn_url_string,$model->page_total]));
+                    $a_li_ul_nav->setAttribute('class',vsprintf('%s',[$a_class,]));
+                    $a_li_ul_nav->setAttribute('data-page',$model->page_total);
+                    $span_a_li_ul_nav = $dom_document->createElement('span');
+                    $span_a_li_ul_nav->setAttribute('class','glyphicon glyphicon-chevron-right');
+                    $span_a_li_ul_nav->setAttribute('alt',$right_alt);
+                    $span_a_li_ul_nav->setAttribute('title',$right_alt);
+                    $span_a_li_ul_nav->setAttribute('aria-hidden','true');
 
-                    $a_li_ul_nav_pagination->appendChild($span_a_li_ul_nav_pagination);
-                    $li_ul_nav_pagination->appendChild($a_li_ul_nav_pagination);
+                    $a_li_ul_nav->appendChild($span_a_li_ul_nav);
+                    $li_ul_nav->appendChild($a_li_ul_nav);
 
-                    $ul_nav_pagination->appendChild($li_ul_nav_pagination);
+                    $ul_nav->appendChild($li_ul_nav);
                 }
 
-                $nav_pagination->appendChild($ul_nav_pagination);
+                $nav_pagination->appendChild($ul_nav);
 
                 if (!empty($node_panel_body)) {
                     $node_panel_body->appendChild($nav_pagination);
