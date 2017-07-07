@@ -2,9 +2,12 @@
 
 namespace Component\HtmlBlock {
     use Core\{Request,Util};
+    use Core\ORM\Transaction;
     use \DOMDocument as DOMDocument;
 
     class Table {
+        private const QUERY_LIMIT_DEFAULT = 9999;
+
         private $dom_document;
         private $dom_element;
         private $model;
@@ -472,12 +475,18 @@ namespace Component\HtmlBlock {
                     } else if ($type == 'td') {
                         if (array_key_exists('option',$object_schema[$column_value]->rule) && !empty($object_schema[$column_value]->rule['option'])) {
                             if (empty($object->$column_value)) {
-                                $object->$column_value = '0';
+                                $object->$column_value = '';
                             }
 
                             if (array_key_exists((string) $object->$column_value,$object_schema[$column_value]->rule['option'])) {
                                 $object->$column_value = $object_schema[$column_value]->rule['option'][$object->$column_value];
                             }
+                        }
+
+                        $reference = $object->getColumnReference();
+
+                        if (!empty($reference)) {
+                            $object->$column_value = $object->$reference;
                         }
 
                         $table_tr_type_element = $dom_document->createElement($type,$object->$column_value);
@@ -526,7 +535,7 @@ namespace Component\HtmlBlock {
                 } else {
                     $field_name = vsprintf('%s__%s',[$data_table_name,$column_value]);
 
-                    if (in_array($data_schema[$column_value]->method,['char','boolean','integer']) && array_key_exists('option',$data_schema[$column_value]->rule)) {
+                    if ($data_schema[$column_value]->method == 'foreignKey' || (in_array($data_schema[$column_value]->method,['char','boolean','integer']) && array_key_exists('option',$data_schema[$column_value]->rule))) {
                         $field = $dom_document->createElement('select');
                         $field->setAttribute('name',$field_name);
                         $field->setAttribute('id',vsprintf('%s-search-%s-%s',[$element_id,$data_table_name,$column_value]));
@@ -543,9 +552,45 @@ namespace Component\HtmlBlock {
 
                         $field_name_value = $util->contains($request_http_get,$field_name)->getString();
 
-                        if (!empty($data_schema[$column_value]->rule['option'])) {
-                            foreach ($data_schema[$column_value]->rule['option'] as $key => $value) {
-                                if (!is_array($value)) {
+                        if ($data_schema[$column_value]->method == 'foreignKey') {
+                            $transaction = new Transaction();
+
+                            $class = get_class($data_schema[$column_value]->rule['table']);
+                            $class = new $class($transaction);
+                            $primary_key = $class
+                                ->definePrimaryKey()
+                                ->getPrimaryKey();
+                            $reference = $class->getColumnReference();
+
+                            $transaction->connect();
+
+                            if (array_key_exists('filter',$data_schema[$column_value]->rule)) {
+                                $class->where($data_schema[$column_value]->rule['filter']);
+                            }
+
+                            $class_execute_data = $class
+                                ->limit(1,self::QUERY_LIMIT_DEFAULT)
+                                ->execute();
+
+                            $data_list = $class_execute_data->data;
+
+                        } else {
+                            $data_list = $data_schema[$column_value]->rule['option'];
+                        }
+
+                        if (!empty($data_list)) {
+                            foreach ($data_list as $key => $value) {
+                                if ($data_schema[$column_value]->method == 'foreignKey') {
+                                    $option = $dom_document->createElement('option',$value->$reference);
+                                    $option->setAttribute('value',$value->$primary_key);
+
+                                    if ((string) $value->$primary_key == $field_name_value) {
+                                        $option->setAttribute('selected','selected');
+                                    }
+
+                                    $field->appendChild($option);
+
+                                } else if (!is_array($value)) {
                                     $option = $dom_document->createElement('option',$value);
                                     $option->setAttribute('value',$key);
 
@@ -789,7 +834,9 @@ namespace Component\HtmlBlock {
                     if ((is_array($column_value) || (is_object($data->$column_value))) && !empty($column_value)) {
                         if (!is_array($column_value) && is_object($data->$column_value)) {
                             $data_key = $data->$column_value;
-                            $column_value = [$data->$column_value->getPrimaryKey()];
+                            $column_value = [
+                                $data->$column_value->definePrimaryKey()->getPrimaryKey(),
+                            ];
 
                         } else {
                             $data_key = $data->$key;
