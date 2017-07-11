@@ -851,7 +851,7 @@ namespace Component\HtmlBlock {
                     } else {
                         if (array_key_exists('option',$data_schema[$column_value]->rule) && !empty($data_schema[$column_value]->rule['option'])) {
                             if (empty($data->$column_value)) {
-                                $data->$column_value = '0';
+                                $data->$column_value = '';
                             }
 
                             if (array_key_exists((string) $data->$column_value,$data_schema[$column_value]->rule['option'])) {
@@ -932,6 +932,8 @@ namespace Component\HtmlBlock {
                 $nav_pagination = $dom_document->createElement('nav');
                 $ul_nav = $dom_document->createElement('ul');
                 $ul_nav->setAttribute('class','pagination');
+
+                $btn_url = $util->contains($pagination,'btn_url')->getString();
                 $btn_url_string = $util->contains($pagination,'btn_url_string')->getString();
                 $a_class = $util->contains($pagination,'class')->getString();
                 $left_alt = $util->contains($pagination,'left_alt')->getString();
@@ -944,7 +946,7 @@ namespace Component\HtmlBlock {
                 if ($model->page_previous > 1) {
                     $li_ul_nav = $dom_document->createElement('li');
                     $a_li_ul_nav = $dom_document->createElement('a');
-                    $a_li_ul_nav->setAttribute('href',vsprintf('?%s&%s=1',[$http_get_rawstring,$btn_url_string,]));
+                    $a_li_ul_nav->setAttribute('href',vsprintf('%s?%s&%s=1',[$btn_url,$http_get_rawstring,$btn_url_string,]));
                     $a_li_ul_nav->setAttribute('class',vsprintf('%s',[$a_class,]));
                     $a_li_ul_nav->setAttribute('data-page','1');
                     $span_a_li_ul_nav = $dom_document->createElement('span');
@@ -962,7 +964,7 @@ namespace Component\HtmlBlock {
                 if ($model->page_previous < $model->page_current) {
                     $li_ul_nav = $dom_document->createElement('li');
                     $a_li_ul_nav = $dom_document->createElement('a');
-                    $a_li_ul_nav->setAttribute('href',vsprintf('?%s&%s=%s',[$http_get_rawstring,$btn_url_string,$model->page_previous,]));
+                    $a_li_ul_nav->setAttribute('href',vsprintf('%s?%s&%s=%s',[$btn_url,$http_get_rawstring,$btn_url_string,$model->page_previous,]));
                     $a_li_ul_nav->setAttribute('class',vsprintf('%s',[$a_class,]));
                     $a_li_ul_nav->setAttribute('data-page',$model->page_previous);
                     $span_a_li_ul_nav = $dom_document->createElement('span',$model->page_previous);
@@ -987,7 +989,7 @@ namespace Component\HtmlBlock {
                 if ($model->page_next < $model->page_total) {
                     $li_ul_nav = $dom_document->createElement('li');
                     $a_li_ul_nav = $dom_document->createElement('a');
-                    $a_li_ul_nav->setAttribute('href',vsprintf('?%s&%s=%s',[$http_get_rawstring,$btn_url_string,$model->page_next]));
+                    $a_li_ul_nav->setAttribute('href',vsprintf('%s?%s&%s=%s',[$btn_url,$http_get_rawstring,$btn_url_string,$model->page_next]));
                     $a_li_ul_nav->setAttribute('class',vsprintf('%s',[$a_class,]));
                     $a_li_ul_nav->setAttribute('data-page',$model->page_next);
                     $span_a_li_ul_nav = $dom_document->createElement('span',$model->page_next);
@@ -1002,7 +1004,7 @@ namespace Component\HtmlBlock {
                 if ($model->page_total > $model->page_current) {
                     $li_ul_nav = $dom_document->createElement('li');
                     $a_li_ul_nav = $dom_document->createElement('a');
-                    $a_li_ul_nav->setAttribute('href',vsprintf('?%s&%s=%s',[$http_get_rawstring,$btn_url_string,$model->page_total]));
+                    $a_li_ul_nav->setAttribute('href',vsprintf('%s?%s&%s=%s',[$btn_url,$http_get_rawstring,$btn_url_string,$model->page_total]));
                     $a_li_ul_nav->setAttribute('class',vsprintf('%s',[$a_class,]));
                     $a_li_ul_nav->setAttribute('data-page',$model->page_total);
                     $span_a_li_ul_nav = $dom_document->createElement('span');
