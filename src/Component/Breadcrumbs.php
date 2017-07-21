@@ -1,25 +1,29 @@
 <?php
+declare(strict_types=1);
 
-namespace Component\HtmlBlock {
+namespace HtmlBlock\Component {
     use Core\Util;
+    use HtmlBlock\HtmlBlock;
+    use HtmlBlock\Interface\HtmlBlock as InterfaceHtmlBlock;
+    use HtmlBlock\Exception\HtmlBlockException as ExceptionHtmlBlock;
     use \DOMDocument as DOMDocument;
+    use \DOMElement as DOMElement;
 
-    class Breadcrumbs {
+    class Breadcrumbs implements InterfaceHtmlBlock {
         private $dom_document;
         private $dom_element;
         private $model;
         private $container_class;
-        private $container_style;
+        private $id;
+        private $class;
+        private $style;
 
-        public function __construct(...$kwargs) {
+        public function __construct(array ...$kwargs) {
             if (!empty($kwargs)) {
                 $kwargs = $kwargs[0];
             }
 
             $util = new Util;
-
-            $encoding = $util->contains($kwargs,'encoding')->getString('UTF-8');
-            $this->setEncoding($encoding);
 
             $model = $util->contains($kwargs,'model')->getArray();
             $this->setModel($model);
@@ -27,132 +31,151 @@ namespace Component\HtmlBlock {
             $container_class = $util->contains($kwargs,'container_class')->getString();
             $this->setContainerClass($container_class);
 
-            $container_style = $util->contains($kwargs,'container_style')->getString();
-            $this->setContainerStyle($container_style);
+            $id = $util->contains($kwargs,'id')->getString();
+            $this->setId($id);
 
-            $dom_document = new DOMDocument(null,$encoding);
+            $class = $util->contains($kwargs,'class')->getString('breadcrumb');
+            $this->setClass($class);
+
+            $style = $util->contains($kwargs,'style')->getString();
+            $this->setStyle($style);
+
+            $dom_document = new DOMDocument('1.0',HtmlBlock::ENCODING);
 
             $this->setDomDocument($dom_document);
-
-            $dom_element = $dom_document->createElement('ol');
-
-            if (isset($kwargs['id']) && !empty($kwargs['id'])) {
-                $dom_element->setAttribute('id',$kwargs['id']);
-            }
-
-            if (isset($kwargs['class']) && !empty($kwargs['class'])) {
-                $dom_element->setAttribute('class',$kwargs['class']);
-
-            } else {
-                $dom_element->setAttribute('class','breadcrumb');
-            }
-
-            if (isset($kwargs['style']) && !empty($kwargs['style'])) {
-                $dom_element->setAttribute('style',$kwargs['style']);
-            }
-
-            $this->setDomElement($dom_element);
             $this->ready();
 
             return $this;
         }
 
-        private function getDomDocument() {
+        private function getDomDocument(): DOMDocument {
             return $this->dom_document;
         }
 
-        private function setDomDocument($dom_document) {
+        private function setDomDocument(DOMDocument $dom_document): self {
             $this->dom_document = $dom_document;
-        }
-
-        public function getEncoding() {
-            return $this->encoding;
-        }
-
-        public function setEncoding($encoding) {
-            $this->encoding = $encoding;
 
             return $this;
         }
 
-        private function getModel() {
-            return $this->model;
-        }
-
-        private function setModel($model) {
-            $this->model = $model;
-        }
-
-        public function getDomElement() {
+        public function getDomElement(): DOMElement {
             return $this->dom_element;
         }
 
-        private function setDomElement($dom_element) {
+        private function setDomElement(DOMElement $dom_element): self {
             $this->dom_element = $dom_element;
+
+            return $this;
         }
 
-        private function getContainerClass() {
+        private function getModel(): ?array {
+            return $this->model;
+        }
+
+        private function setModel(?array $model): self {
+            $this->model = $model;
+
+            return $this;
+        }
+
+        private function getContainerClass(): ?string {
             return $this->container_class;
         }
-
-        private function setContainerClass($container_class) {
+ 
+        private function setContainerClass(?string $container_class): self {
             $this->container_class = $container_class;
+
+            return $this;
         }
 
-        private function getContainerStyle() {
-            return $this->container_style;
+        private function getId(): ?string {
+            return $this->id;
         }
 
-        private function setContainerStyle($container_style) {
-            $this->container_style = $container_style;
+        private function setId(?string $id): self {
+            $this->id = $id;
+
+            return $this;
         }
 
-        private function addContainer() {
+        private function getClass(): ?string {
+            return $this->class;
+        }
+
+        private function setClass(?string $class): self {
+            $this->class = $class;
+
+            return $this;
+        }
+
+        private function getStyle(): ?string {
+            return $this->style;
+        }
+
+        private function setStyle(?string $style): self {
+            $this->style = $style;
+
+            return $this;
+        }
+
+        private function ready(): self {
+            $util = new Util;
+
             $dom_document = $this->getDomDocument();
-            $dom_element = $this->getDomElement();
-            $container_class = $this->getContainerClass();
-            $container_style = $this->getContainerStyle();
 
-            $div_class_col = $dom_document->createElement('div');
-            $div_class_col->setAttribute('class',$container_class);
-            $div_class_col->setAttribute('style',$container_style);
+            $dom_element = $dom_document->createElement('ol');
+            $dom_element->setAttribute('id',$this->getId());
+            $dom_element->setAttribute('class',$this->getClass());
+            $dom_element->setAttribute('style',$this->getStyle());
 
-            $div_class_col->appendChild($dom_element);
-
-            return $div_class_col;
-        }
-
-        private function ready() {
-            $dom_document = $this->getDomDocument();
-            $dom_element = $this->getDomElement();
             $model = $this->getModel();
 
             if (empty($model)) {
-                return false;
+                $this->setDomElement($dom_element);
+                $this->addContainer();
+
+                return $this;
             }
 
-            foreach ($model as $model_data) {
-                $href = $model_data['href'] ?? null;
-                $title = $model_data['title'] ?? null;
-                $active = $model_data['active'] ?? null;
+            foreach ($model as $item) {
+                $href = $util->contains($item,'href')->getString();
+                $title = $util->contains($item,'title')->getString();
+                $active = $util->contains($item,'active')->getString();
 
                 if (!empty($active)) {
-                    $li_breadcrumbs = $dom_document->createElement('li',$title);
-                    $li_breadcrumbs->setAttribute('class','active');                    
-                } else {
-                    $li_a_heading = $dom_document->createElement('a',$title);
-                    $li_a_heading->setAttribute('href',$href);
+                    $li = $dom_document->createElement('li',$title);
+                    $li->setAttribute('class','active');
 
-                    $li_breadcrumbs = $dom_document->createElement('li');
-                    $li_breadcrumbs->appendChild($li_a_heading);
+                } else {
+                    $a = $dom_document->createElement('a',$title);
+                    $a->setAttribute('href',$href);
+
+                    $li = $dom_document->createElement('li');
+                    $li->appendChild($a);
 
                 }
 
-                $dom_element->appendChild($li_breadcrumbs);
+                $dom_element->appendChild($li);
             }
 
-            $add_container = $this->addContainer();
-            $this->setDomElement($add_container);
+            $this->setDomElement($dom_element);
+            $this->addContainer();
+
+            return $this;
+        }
+
+        private function addContainer(): self {
+            $dom_document = $this->getDomDocument();
+            $dom_element = $this->getDomElement();
+            $container_class = $this->getContainerClass();
+ 
+            $div_container = $dom_document->createElement('div');
+            $div_container->setAttribute('class',$container_class);
+            $div_container->appendChild($dom_element);
+ 
+            $this->setDomElement($div_container);
+
+            return $this;
         }
 
         public function renderHtml() {

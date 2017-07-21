@@ -1,11 +1,17 @@
 <?php
+declare(strict_types=1);
 
-namespace Component\HtmlBlock {
+namespace HtmlBlock\Component {
     use Core\{Request,Util};
     use Core\ORM\Transaction;
+    use HtmlBlock\HtmlBlock;
+    use HtmlBlock\Interface\HtmlBlock as InterfaceHtmlBlock;
+    use HtmlBlock\Exception\HtmlBlockException as ExceptionHtmlBlock;
     use \DOMDocument as DOMDocument;
+    use \DOMElement as DOMElement;
+    use \DOMNode as DOMNode;
 
-    class Table {
+    class Table implements InterfaceHtmlBlock {
         private const QUERY_LIMIT_DEFAULT = 9999;
 
         private $dom_document;
@@ -24,22 +30,20 @@ namespace Component\HtmlBlock {
         private $text_empty;
         private $footer;
         private $container_class;
-        private $container_style;
         private $node_table_thead;
         private $node_table_tbody;
         private $node_table_tfoot;
         private $node_panel_body;
         private $node_container;
+        private $class;
+        private $style;
 
-        public function __construct(...$kwargs) {
+        public function __construct(array ...$kwargs) {
             if (!empty($kwargs)) {
                 $kwargs = $kwargs[0];
             }
 
             $util = new Util;
-
-            $encoding = $util->contains($kwargs,'encoding')->getString('UTF-8');
-            $this->setEncoding($encoding);
 
             $model = $util->contains($kwargs,'model')->getArray();
             $model = $model[0];
@@ -81,224 +85,300 @@ namespace Component\HtmlBlock {
             $container_class = $util->contains($kwargs,'container_class')->getString();
             $this->setContainerClass($container_class);
 
-            $container_style = $util->contains($kwargs,'container_style')->getString();
-            $this->setContainerStyle($container_style);
+            $id = $util->contains($kwargs,'id')->getString();
+            $this->setId($id);
 
-            $dom_document = new DOMDocument(null,$encoding);
+            $class = $util->contains($kwargs,'class')->getString('table table-striped table-bordered table-hover table-condensed table-responsive');
+            $this->setClass($class);
+
+            $style = $util->contains($kwargs,'style')->getString();
+            $this->setStyle($style);
+
+            $dom_document = new DOMDocument('1.0',HtmlBlock::ENCODING);
 
             $this->setDomDocument($dom_document);
-
-            $dom_element = $dom_document->createElement('table');
-
-            if (isset($kwargs['id']) && !empty($kwargs['id'])) {
-                $dom_element->setAttribute('id',$kwargs['id']);
-                $this->setId($kwargs['id']);
-            }
-
-            if (isset($kwargs['class']) && !empty($kwargs['class'])) {
-                $dom_element->setAttribute('class',$kwargs['class']);
-
-            } else {
-                $dom_element->setAttribute('class','table table-striped table-bordered table-hover table-condensed table-responsive');
-            }
-
-            if (isset($kwargs['style']) && !empty($kwargs['style'])) {
-                $dom_element->setAttribute('style',$kwargs['style']);
-            }
-
-            $this->setDomElement($dom_element);
             $this->ready();
 
             return $this;
         }
 
-        private function getDomDocument() {
+        private function getDomDocument(): DOMDocument {
             return $this->dom_document;
         }
 
-        private function setDomDocument($dom_document) {
+        private function setDomDocument(DOMDocument $dom_document): self {
             $this->dom_document = $dom_document;
-        }
-
-        public function getDomElement() {
-            return $this->dom_element;
-        }
-
-        private function setDomElement($dom_element) {
-            $this->dom_element = $dom_element;
-        }
-
-        public function getEncoding() {
-            return $this->encoding;
-        }
-
-        public function setEncoding($encoding) {
-            $this->encoding = $encoding;
 
             return $this;
         }
 
-        private function getModel() {
+        public function getDomElement(): DOMElement {
+            return $this->dom_element;
+        }
+
+        private function setDomElement(DOMElement $dom_element): self {
+            $this->dom_element = $dom_element;
+
+            return $this;
+        }
+
+        private function getModel(): ?array {
             return $this->model;
         }
 
-        private function setModel($model) {
+        private function setModel(?array $model): self {
             $this->model = $model;
+
+            return $this;
         }
 
-        private function getColumn() {
-            return $this->column;
+        private function getContainerClass(): ?string {
+            return $this->container_class;
+        }
+ 
+        private function setContainerClass(?string $container_class): self {
+            $this->container_class = $container_class;
+
+            return $this;
         }
 
-        private function setColumn($column) {
-            $this->column = $column;
-        }
-
-        private function getPagination() {
-            return $this->pagination;
-        }
-
-        private function setPagination($pagination) {
-            $this->pagination = $pagination;
-        }
-
-        private function getButton() {
-            return $this->button;
-        }
-
-        private function setButton($button) {
-            $this->button = $button;
-        }
-
-        private function getButtonInline() {
-            return $this->button_inline;
-        }
-
-        private function setButtonInline($button_inline) {
-            $this->button_inline = $button_inline;
-        }
-
-        private function getButtonExtra() {
-            return $this->button_extra;
-        }
-
-        private function setButtonExtra($button_extra) {
-            $this->button_extra = $button_extra;
-        }
-
-        private function getButtonSearch() {
-            return $this->button_search;
-        }
-
-        private function setButtonSearch($button_search) {
-            $this->button_search = $button_search;
-        }
-
-        private function getId() {
+        private function getId(): ?string {
             return $this->id;
         }
 
-        private function setId($id) {
+        private function setId(?string $id): self {
             $this->id = $id;
+
+            return $this;
         }
 
-        private function getTitle() {
+        private function getClass(): ?string {
+            return $this->class;
+        }
+
+        private function setClass(?string $class): self {
+            $this->class = $class;
+
+            return $this;
+        }
+
+        private function getStyle(): ?string {
+            return $this->style;
+        }
+
+        private function setStyle(?string $style): self {
+            $this->style = $style;
+
+            return $this;
+        }
+
+        private function getColumn(): ?array {
+            return $this->column;
+        }
+
+        private function setColumn(?array $column): self {
+            $this->column = $column;
+
+            return $this;
+        }
+
+        private function getPagination(): ?array {
+            return $this->pagination;
+        }
+
+        private function setPagination(?array $pagination): self {
+            $this->pagination = $pagination;
+
+            return $this;
+        }
+
+        private function getButton(): ?array {
+            return $this->button;
+        }
+
+        private function setButton(?array $button): self {
+            $this->button = $button;
+
+            return $this;
+        }
+
+        private function getButtonInline(): ?array {
+            return $this->button_inline;
+        }
+
+        private function setButtonInline(?array $button_inline): self {
+            $this->button_inline = $button_inline;
+
+            return $this;
+        }
+
+        private function getButtonExtra(): ?array {
+            return $this->button_extra;
+        }
+
+        private function setButtonExtra(?array $button_extra): self {
+            $this->button_extra = $button_extra;
+
+            return $this;
+        }
+
+        private function getButtonSearch(): ?array {
+            return $this->button_search;
+        }
+
+        private function setButtonSearch(?array $button_search): self {
+            $this->button_search = $button_search;
+
+            return $this;
+        }
+
+        private function getTitle(): ?string {
             return $this->title;
         }
 
-        private function setTitle($title) {
+        private function setTitle(?string $title): self {
             $this->title = $title;
+
+            return $this;
         }
 
-        private function getTitleEmpty() {
+        private function getTitleEmpty(): ?string {
             return $this->title_empty;
         }
 
-        private function setTitleEmpty($title_empty) {
+        private function setTitleEmpty(?string $title_empty): self {
             $this->title_empty = $title_empty;
+
+            return $this;
         }
 
-        private function getText() {
+        private function getText(): ?string {
             return $this->text;
         }
 
-        private function setText($text) {
+        private function setText(?string $text): self {
             $this->text = $text;
+
+            return $this;
         }
 
-        private function getTextEmpty() {
+        private function getTextEmpty(): ?string {
             return $this->text_empty;
         }
 
-        private function setTextEmpty($text_empty) {
+        private function setTextEmpty(?string $text_empty): self {
             $this->text_empty = $text_empty;
+
+            return $this;
         }
 
-        private function getFooter() {
+        private function getFooter(): ?string {
             return $this->footer;
         }
 
-        private function setFooter($footer) {
+        private function setFooter(?string $footer): self {
             $this->footer = $footer;
+
+            return $this;
         }
 
-        private function getContainerClass() {
+        private function getContainerClass(): ?string {
             return $this->container_class;
         }
 
-        private function setContainerClass($container_class) {
+        private function setContainerClass(?string $container_class): self {
             $this->container_class = $container_class;
+
+            return $this;
         }
 
-        private function getContainerStyle() {
-            return $this->container_style;
-        }
-
-        private function setContainerStyle($container_style) {
-            $this->container_style = $container_style;
-        }
-
-        private function getNodeTableThead() {
+        private function getNodeTableThead(): DOMNode {
             return $this->node_table_thead;
         }
 
-        private function setNodeTableThead($node_table_thead) {
+        private function setNodeTableThead(DOMNode $node_table_thead): self {
             $this->node_table_thead = $node_table_thead;
+
+            return $this;
         }
 
-        private function getNodeTableTbody() {
+        private function getNodeTableTbody(): DOMNode {
             return $this->node_table_tbody;
         }
 
-        private function setNodeTableTbody($node_table_tbody) {
+        private function setNodeTableTbody(DOMNode $node_table_tbody): self {
             $this->node_table_tbody = $node_table_tbody;
+
+            return $this;
         }
 
-        private function getNodeTableTfoot() {
+        private function getNodeTableTfoot(): DOMNode {
             return $this->node_table_tfoot;
         }
 
-        private function setNodeTableTfoot($node_table_tfoot) {
+        private function setNodeTableTfoot(DOMNode $node_table_tfoot): self {
             $this->node_table_tfoot = $node_table_tfoot;
+
+            return $this;
         }
 
-        private function getNodePanelBody() {
+        private function getNodePanelBody(): DOMNode {
             return $this->node_panel_body;
         }
 
-        private function setNodePanelBody($node_panel_body) {
+        private function setNodePanelBody(DOMNode $node_panel_body): self {
             $this->node_panel_body = $node_panel_body;
+
+            return $this;
         }
 
-        private function getNodeContainer() {
+        private function getNodeContainer(): DOMNode {
             return $this->node_container;
         }
 
-        private function setNodeContainer($node_container) {
+        private function setNodeContainer(DOMNode $node_container): self {
             $this->node_container = $node_container;
+
+            return $this;
         }
 
-        private function addButton() {
+        private function ready(): self {
+            $util = new Util;
+
+            $dom_document = $this->getDomDocument();
+
+            $dom_element = $dom_document->createElement('table');
+            $dom_element->setAttribute('id',$this->getId());
+            $dom_element->setAttribute('class',$this->getClass());
+            $dom_element->setAttribute('style',$this->getStyle());
+
+            $model = $this->getModel();
+
+            if (empty($model) || empty($model->data)) {
+                $this->setDomElement($dom_element);
+                $this->addButton();
+                $this->addEmpty();
+                $this->addPanel();
+                $this->addContainer();
+
+                return $this;
+            }
+
+            $this->addButton();
+            $this->addThead();
+            $this->addSearch();
+            $this->addTbody();
+            $this->addTfoot();
+            $this->addForm();
+            $this->addPanel();
+            $this->addContainer();
+            $this->addTotalizer();
+            $this->addPagination();
+
+            return $this;
+        }
+
+        private function addButton(): self {
             $model = $this->getModel();
 
             $dom_document = $this->getDomDocument();
@@ -308,7 +388,7 @@ namespace Component\HtmlBlock {
             $button_extra = $this->getButtonExtra();
 
             if (empty($button) && empty($button_extra)) {
-                return false;
+                return $this;
             }
 
             $util = new Util;
@@ -323,35 +403,35 @@ namespace Component\HtmlBlock {
                 foreach ($button as $data) {
                     $href = $util->contains($data,'href')->getString();
 
-                    $a_div_button_group = $dom_document->createElement('a',$util->contains($data,'label')->getString());
-                    $a_div_button_group->setAttribute('href',$href);
-                    $a_div_button_group->setAttribute('id',$util->contains($data,'href')->getString());
-                    $a_div_button_group->setAttribute('role','button');
-                    $a_div_button_group->setAttribute('class',$util->contains($data,'class')->getString('btn btn-default btn-xs'));
+                    $a = $dom_document->createElement('a',$util->contains($data,'label')->getString());
+                    $a->setAttribute('href',$href);
+                    $a->setAttribute('id',$util->contains($data,'href')->getString());
+                    $a->setAttribute('role','button');
+                    $a->setAttribute('class',$util->contains($data,'class')->getString('btn btn-default btn-xs'));
 
                     $alt = $util->contains($data,'alt')->getString();
 
                     if (!empty($alt)) {
-                        $a_div_button_group->setAttribute('data-toggle','tooltip');
-                        $a_div_button_group->setAttribute('data-placement','top');
-                        $a_div_button_group->setAttribute('title',$alt);
-                        $a_div_button_group->setAttribute('alt',$alt);
-                        $a_div_button_group->setAttribute('data-toggle','tooltip');
-                        $a_div_button_group->setAttribute('data-placement','top');
-                        $a_div_button_group->setAttribute('data-container','body');
+                        $a->setAttribute('data-toggle','tooltip');
+                        $a->setAttribute('data-placement','top');
+                        $a->setAttribute('title',$alt);
+                        $a->setAttribute('alt',$alt);
+                        $a->setAttribute('data-toggle','tooltip');
+                        $a->setAttribute('data-placement','top');
+                        $a->setAttribute('data-container','body');
                     }
 
                     $icon = $util->contains($data,'icon')->getString();
 
                     if (!empty($icon)) {
-                        $span_button_div_button_group = $dom_document->createElement('span');
-                        $span_button_div_button_group->setAttribute('class',$icon);
-                        $span_button_div_button_group->setAttribute('aria-hidden','true');
+                        $span = $dom_document->createElement('span');
+                        $span->setAttribute('class',$icon);
+                        $span->setAttribute('aria-hidden','true');
 
-                        $a_div_button_group->appendChild($span_button_div_button_group);
+                        $a->appendChild($span);
                     }
 
-                    $div_button_group->appendChild($a_div_button_group);
+                    $div_button_group->appendChild($a);
                 }
             }
 
@@ -362,39 +442,39 @@ namespace Component\HtmlBlock {
                 $div_button_extra_group->setAttribute('aria-label','');
 
                 foreach ($button_extra as $data) {
-                    $a_div_button_extra_group = $dom_document->createElement('a',$util->contains($data,'label')->getString());
-                    $a_div_button_extra_group->setAttribute('href',$util->contains($data,'href')->getString());
-                    $a_div_button_extra_group->setAttribute('id',$util->contains($data,'id')->getString());
-                    $a_div_button_extra_group->setAttribute('role','button');
-                    $a_div_button_extra_group->setAttribute('class',$util->contains($data,'class')->getString('btn btn-default btn-xs'));
+                    $a = $dom_document->createElement('a',$util->contains($data,'label')->getString());
+                    $a->setAttribute('href',$util->contains($data,'href')->getString());
+                    $a->setAttribute('id',$util->contains($data,'id')->getString());
+                    $a->setAttribute('role','button');
+                    $a->setAttribute('class',$util->contains($data,'class')->getString('btn btn-default btn-xs'));
 
                     $alt = $util->contains($data,'alt')->getString();
 
                     if (!empty($alt)) {
-                        $a_div_button_extra_group->setAttribute('data-toggle','tooltip');
-                        $a_div_button_extra_group->setAttribute('data-placement','top');
-                        $a_div_button_extra_group->setAttribute('title',$alt);
-                        $a_div_button_extra_group->setAttribute('alt',$alt);
-                        $a_div_button_extra_group->setAttribute('data-container','body');
+                        $a->setAttribute('data-toggle','tooltip');
+                        $a->setAttribute('data-placement','top');
+                        $a->setAttribute('title',$alt);
+                        $a->setAttribute('alt',$alt);
+                        $a->setAttribute('data-container','body');
                     }
 
                     $icon = $util->contains($data,'icon')->getString();
 
                     if (!empty($icon)) {
-                        $span_button_extra_div_button_group = $dom_document->createElement('span');
-                        $span_button_extra_div_button_group->setAttribute('class',$icon);
-                        $span_button_extra_div_button_group->setAttribute('aria-hidden','true');
+                        $span = $dom_document->createElement('span');
+                        $span->setAttribute('class',$icon);
+                        $span->setAttribute('aria-hidden','true');
 
-                        $a_div_button_extra_group->appendChild($span_button_extra_div_button_group);
+                        $a->appendChild($span);
                     }
 
-                    $div_button_extra_group->appendChild($a_div_button_extra_group);
+                    $div_button_extra_group->appendChild($a);
                 }
             }
 
-            $p_element = $dom_document->createElement('p');
-            $p_element->setAttribute('class','pull-left');
-            $p_element->setAttribute('style','width:100%;');
+            $p = $dom_document->createElement('p');
+            $p->setAttribute('class','pull-left');
+            $p->setAttribute('style','width:100%;');
 
             if (!empty($button)) {
                 $dom_element->insertBefore($div_button_group);
@@ -404,10 +484,12 @@ namespace Component\HtmlBlock {
                 $dom_element->insertBefore($div_button_extra_group);
             }
 
-            $dom_element->insertBefore($p_element);
+            $dom_element->insertBefore($p);
+
+            return $this;
         }
 
-        private function addEmpty() {
+        private function addEmpty(): self {
             $dom_document = $this->getDomDocument();
             $dom_element = $this->getDomElement();
             $title_empty = $this->getTitleEmpty();
@@ -428,6 +510,8 @@ namespace Component\HtmlBlock {
 
             $dom_element->appendChild($thead);
             $dom_element->appendChild($tbody);
+
+            return $this;
         }
 
         private function modelLoop($dom_document,$table_tr_element,$object,$object_column,$type,$object_table_name_main = null) {
@@ -932,7 +1016,7 @@ namespace Component\HtmlBlock {
                 $nav_pagination = $dom_document->createElement('nav');
                 $ul_nav = $dom_document->createElement('ul');
                 $ul_nav->setAttribute('class','pagination');
-
+/
                 $btn_url = $util->contains($pagination,'btn_url')->getString();
                 $btn_url_string = $util->contains($pagination,'btn_url_string')->getString();
                 $a_class = $util->contains($pagination,'class')->getString();
@@ -1097,46 +1181,19 @@ namespace Component\HtmlBlock {
             $this->setDomElement($div_class_panel);
         }
 
-        private function addContainer() {
+        private function addContainer(): self {
             $dom_document = $this->getDomDocument();
             $dom_element = $this->getDomElement();
             $container_class = $this->getContainerClass();
-            $container_style = $this->getContainerStyle();
+ 
+            $div_container = $dom_document->createElement('div');
+            $div_container->setAttribute('class',$container_class);
+            $div_container->appendChild($dom_element);
 
-            $div_class_col = $dom_document->createElement('div');
-            $div_class_col->setAttribute('class',$container_class);
-            $div_class_col->setAttribute('style',$container_style);
+            $this->setNodeContainer($div_container); 
+            $this->setDomElement($div_container);
 
-            $div_class_col->appendChild($dom_element);
-
-            $this->setNodeContainer($div_class_col);
-            $this->setDomElement($div_class_col);
-        }
-
-        private function ready() {
-            $dom_document = $this->getDomDocument();
-            $dom_element = $this->getDomElement();
-            $model = $this->getModel();
-
-            if (empty($model) || empty($model->data)) {
-                $this->addButton();
-                $this->addEmpty();
-                $this->addPanel();
-                $this->addContainer();
-
-                return false;
-            }
-
-            $this->addButton();
-            $this->addThead();
-            $this->addSearch();
-            $this->addTbody();
-            $this->addTfoot();
-            $this->addForm();
-            $this->addPanel();
-            $this->addContainer();
-            $this->addTotalizer();
-            $this->addPagination();
+            return $this;
         }
 
         public function renderHtml() {
