@@ -514,7 +514,7 @@ namespace HtmlBlock\Component {
             return $this;
         }
 
-        private function modelLoop($dom_document,$table_tr_element,$object,$object_column,$type,$object_table_name_main = null) {
+        private function modelLoop(DOMDocument $dom_document,DOMElement $table_tr_element,$object,$object_column,string $type,?string $object_table_name_main = null): void {
             $element_id = $this->getId();
             $column = $this->getColumn();
             $object_table_name = $object->getTableName();
@@ -580,7 +580,7 @@ namespace HtmlBlock\Component {
             }
         }
 
-        private function addSearch() {
+        private function addSearch(): void {
             $dom_document = $this->getDomDocument();
             $model = $this->getModel();
 
@@ -590,7 +590,7 @@ namespace HtmlBlock\Component {
             $element_id = $this->getId();
 
             if (empty($model->data)) {
-                return false;
+                return;
             }
 
             $util = new Util;
@@ -769,7 +769,7 @@ namespace HtmlBlock\Component {
             $node_table_thead->appendChild($table_thead_tr_element);
         }
 
-        private function addThead() {
+        private function addThead(): void {
             $dom_document = $this->getDomDocument();
             $dom_element = $this->getDomElement();
             $model = $this->getModel();
@@ -781,7 +781,7 @@ namespace HtmlBlock\Component {
             $this->setNodeTableThead($node_table_thead);
 
             if (empty($model->data)) {
-                return false;
+                return;
             }
 
             $data = $model->data[0];
@@ -816,13 +816,13 @@ namespace HtmlBlock\Component {
             $node_table_thead->appendChild($table_thead_tr_element);
         }
 
-        private function addTableButton($table_tbody_tr_element,$model) {
+        private function addTableButton(DOMElement $table_tbody_tr_element,array $model): ?DOMElement {
             $dom_document = $this->getDomDocument();
             $element_id = $this->getId();
             $button_inline = $this->getButtonInline();
 
             if (empty($button_inline)) {
-                return false;
+                return null;
             }
 
             $table = $dom_document->createElement('table');
@@ -880,7 +880,7 @@ namespace HtmlBlock\Component {
             return $table_tbody_tr_element;
         }
 
-        private function addTbody() {
+        private function addTbody(): void {
             $dom_document = $this->getDomDocument();
             $dom_element = $this->getDomElement();
             $model = $this->getModel();
@@ -892,7 +892,7 @@ namespace HtmlBlock\Component {
             $this->setNodeTableTbody($node_table_tbody);
 
             if (empty($model->data)) {
-                return false;
+                return;
             }
 
             $field_primary_key = null;
@@ -959,7 +959,7 @@ namespace HtmlBlock\Component {
             }
         }
 
-        private function addTotalizer() {
+        private function addTotalizer(): void {
             $dom_document = $this->getDomDocument();
             $model = $this->getModel();
             $node_panel_body = $this->getNodePanelBody();
@@ -999,7 +999,7 @@ namespace HtmlBlock\Component {
             }
         }
 
-        private function addPagination() {
+        private function addPagination(): void {
             $dom_document = $this->getDomDocument();
             $model = $this->getModel();
 
@@ -1016,7 +1016,7 @@ namespace HtmlBlock\Component {
                 $nav_pagination = $dom_document->createElement('nav');
                 $ul_nav = $dom_document->createElement('ul');
                 $ul_nav->setAttribute('class','pagination');
-/
+
                 $btn_url = $util->contains($pagination,'btn_url')->getString();
                 $btn_url_string = $util->contains($pagination,'btn_url_string')->getString();
                 $a_class = $util->contains($pagination,'class')->getString();
@@ -1114,16 +1114,17 @@ namespace HtmlBlock\Component {
             }
         }
 
-        private function addTfoot() {
+        private function addTfoot(): void {
             $dom_document = $this->getDomDocument();
             $dom_element = $this->getDomElement();
 
             $table_tfoot_element = $dom_document->createElement('tfoot');
             $node_table_tfoot = $dom_element->appendChild($table_tfoot_element);
+
             $this->setNodeTableTfoot($node_table_tfoot);
         }
 
-        private function addForm() {
+        private function addForm(): void {
             $dom_document = $this->getDomDocument();
             $dom_element = $this->getDomElement();
             $button_search = $this->getButtonSearch();
@@ -1140,7 +1141,7 @@ namespace HtmlBlock\Component {
             $this->setDomElement($form);
         }
 
-        private function addPanel() {
+        private function addPanel(): void {
             $dom_document = $this->getDomDocument();
             $dom_element = $this->getDomElement();
             $title = $this->getTitle();
@@ -1148,7 +1149,7 @@ namespace HtmlBlock\Component {
             $footer = $this->getFooter();
 
             if (empty($title) && empty($text) && empty($footer)) {
-                return false;
+                return;
             }
 
             $div_class_panel = $dom_document->createElement('div');
@@ -1196,7 +1197,7 @@ namespace HtmlBlock\Component {
             return $this;
         }
 
-        public function renderHtml() {
+        public function renderHtml(): string {
             $dom_document = $this->getDomDocument();
 
             return $dom_document->saveHTML();

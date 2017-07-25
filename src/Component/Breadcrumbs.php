@@ -178,7 +178,7 @@ namespace HtmlBlock\Component {
             return $this;
         }
 
-        public function renderHtml() {
+        public function renderHtml(): string {
             $dom_document = $this->getDomDocument();
 
             return $dom_document->saveHTML();
